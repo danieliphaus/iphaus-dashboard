@@ -2,8 +2,8 @@
   "meta": {
     "generated": "April 05, 2026",
     "run_number": 15,
-    "connectors": 11,
-    "total_records": 1076
+    "connectors": 14,
+    "total_records": 2151
   },
   "bls": {
     "nyc_unemployment": [
@@ -4565,5 +4565,1273 @@
       "interior_sf",
       "subway_dist_ft"
     ]
+  },
+  "fred": {
+    "mortgage_30yr": {
+      "label": "30-Year Fixed Mortgage Rate",
+      "unit": "%",
+      "data": [
+        {
+          "date": "2025-02-13",
+          "value": 6.87,
+          "label": "02/25"
+        },
+        {
+          "date": "2025-02-20",
+          "value": 6.85,
+          "label": "02/25"
+        },
+        {
+          "date": "2025-02-27",
+          "value": 6.76,
+          "label": "02/25"
+        },
+        {
+          "date": "2025-03-06",
+          "value": 6.63,
+          "label": "03/25"
+        },
+        {
+          "date": "2025-03-13",
+          "value": 6.65,
+          "label": "03/25"
+        },
+        {
+          "date": "2025-03-20",
+          "value": 6.67,
+          "label": "03/25"
+        },
+        {
+          "date": "2025-03-27",
+          "value": 6.65,
+          "label": "03/25"
+        },
+        {
+          "date": "2025-04-03",
+          "value": 6.64,
+          "label": "04/25"
+        },
+        {
+          "date": "2025-04-10",
+          "value": 6.62,
+          "label": "04/25"
+        },
+        {
+          "date": "2025-04-17",
+          "value": 6.83,
+          "label": "04/25"
+        },
+        {
+          "date": "2025-04-24",
+          "value": 6.81,
+          "label": "04/25"
+        },
+        {
+          "date": "2025-05-01",
+          "value": 6.76,
+          "label": "05/25"
+        },
+        {
+          "date": "2025-05-08",
+          "value": 6.76,
+          "label": "05/25"
+        },
+        {
+          "date": "2025-05-15",
+          "value": 6.81,
+          "label": "05/25"
+        },
+        {
+          "date": "2025-05-22",
+          "value": 6.86,
+          "label": "05/25"
+        },
+        {
+          "date": "2025-05-29",
+          "value": 6.89,
+          "label": "05/25"
+        },
+        {
+          "date": "2025-06-05",
+          "value": 6.85,
+          "label": "06/25"
+        },
+        {
+          "date": "2025-06-12",
+          "value": 6.84,
+          "label": "06/25"
+        },
+        {
+          "date": "2025-06-18",
+          "value": 6.81,
+          "label": "06/25"
+        },
+        {
+          "date": "2025-06-26",
+          "value": 6.77,
+          "label": "06/25"
+        },
+        {
+          "date": "2025-07-03",
+          "value": 6.67,
+          "label": "07/25"
+        },
+        {
+          "date": "2025-07-10",
+          "value": 6.72,
+          "label": "07/25"
+        },
+        {
+          "date": "2025-07-17",
+          "value": 6.75,
+          "label": "07/25"
+        },
+        {
+          "date": "2025-07-24",
+          "value": 6.74,
+          "label": "07/25"
+        },
+        {
+          "date": "2025-07-31",
+          "value": 6.72,
+          "label": "07/25"
+        },
+        {
+          "date": "2025-08-07",
+          "value": 6.63,
+          "label": "08/25"
+        },
+        {
+          "date": "2025-08-14",
+          "value": 6.58,
+          "label": "08/25"
+        },
+        {
+          "date": "2025-08-21",
+          "value": 6.58,
+          "label": "08/25"
+        },
+        {
+          "date": "2025-08-28",
+          "value": 6.56,
+          "label": "08/25"
+        },
+        {
+          "date": "2025-09-04",
+          "value": 6.5,
+          "label": "09/25"
+        },
+        {
+          "date": "2025-09-11",
+          "value": 6.35,
+          "label": "09/25"
+        },
+        {
+          "date": "2025-09-18",
+          "value": 6.26,
+          "label": "09/25"
+        },
+        {
+          "date": "2025-09-25",
+          "value": 6.3,
+          "label": "09/25"
+        },
+        {
+          "date": "2025-10-02",
+          "value": 6.34,
+          "label": "10/25"
+        },
+        {
+          "date": "2025-10-09",
+          "value": 6.3,
+          "label": "10/25"
+        },
+        {
+          "date": "2025-10-16",
+          "value": 6.27,
+          "label": "10/25"
+        },
+        {
+          "date": "2025-10-23",
+          "value": 6.19,
+          "label": "10/25"
+        },
+        {
+          "date": "2025-10-30",
+          "value": 6.17,
+          "label": "10/25"
+        },
+        {
+          "date": "2025-11-06",
+          "value": 6.22,
+          "label": "11/25"
+        },
+        {
+          "date": "2025-11-13",
+          "value": 6.24,
+          "label": "11/25"
+        },
+        {
+          "date": "2025-11-20",
+          "value": 6.26,
+          "label": "11/25"
+        },
+        {
+          "date": "2025-11-26",
+          "value": 6.23,
+          "label": "11/25"
+        },
+        {
+          "date": "2025-12-04",
+          "value": 6.19,
+          "label": "12/25"
+        },
+        {
+          "date": "2025-12-11",
+          "value": 6.22,
+          "label": "12/25"
+        },
+        {
+          "date": "2025-12-18",
+          "value": 6.21,
+          "label": "12/25"
+        },
+        {
+          "date": "2025-12-24",
+          "value": 6.18,
+          "label": "12/25"
+        },
+        {
+          "date": "2025-12-31",
+          "value": 6.15,
+          "label": "12/25"
+        },
+        {
+          "date": "2026-01-08",
+          "value": 6.16,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-15",
+          "value": 6.06,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-22",
+          "value": 6.09,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-29",
+          "value": 6.1,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-02-05",
+          "value": 6.11,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-12",
+          "value": 6.09,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-19",
+          "value": 6.01,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-26",
+          "value": 5.98,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-03-05",
+          "value": 6.0,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-12",
+          "value": 6.11,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-19",
+          "value": 6.22,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-26",
+          "value": 6.38,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-04-02",
+          "value": 6.46,
+          "label": "04/26"
+        }
+      ]
+    },
+    "housing_starts": {
+      "label": "Housing Starts (thousands)",
+      "unit": "K",
+      "data": [
+        {
+          "date": "2024-01-01",
+          "value": 1381.0,
+          "label": "01/24"
+        },
+        {
+          "date": "2024-02-01",
+          "value": 1552.0,
+          "label": "02/24"
+        },
+        {
+          "date": "2024-03-01",
+          "value": 1312.0,
+          "label": "03/24"
+        },
+        {
+          "date": "2024-04-01",
+          "value": 1385.0,
+          "label": "04/24"
+        },
+        {
+          "date": "2024-05-01",
+          "value": 1316.0,
+          "label": "05/24"
+        },
+        {
+          "date": "2024-06-01",
+          "value": 1327.0,
+          "label": "06/24"
+        },
+        {
+          "date": "2024-07-01",
+          "value": 1265.0,
+          "label": "07/24"
+        },
+        {
+          "date": "2024-08-01",
+          "value": 1391.0,
+          "label": "08/24"
+        },
+        {
+          "date": "2024-09-01",
+          "value": 1357.0,
+          "label": "09/24"
+        },
+        {
+          "date": "2024-10-01",
+          "value": 1352.0,
+          "label": "10/24"
+        },
+        {
+          "date": "2024-11-01",
+          "value": 1295.0,
+          "label": "11/24"
+        },
+        {
+          "date": "2024-12-01",
+          "value": 1514.0,
+          "label": "12/24"
+        },
+        {
+          "date": "2025-01-01",
+          "value": 1358.0,
+          "label": "01/25"
+        },
+        {
+          "date": "2025-02-01",
+          "value": 1490.0,
+          "label": "02/25"
+        },
+        {
+          "date": "2025-03-01",
+          "value": 1355.0,
+          "label": "03/25"
+        },
+        {
+          "date": "2025-04-01",
+          "value": 1398.0,
+          "label": "04/25"
+        },
+        {
+          "date": "2025-05-01",
+          "value": 1282.0,
+          "label": "05/25"
+        },
+        {
+          "date": "2025-06-01",
+          "value": 1382.0,
+          "label": "06/25"
+        },
+        {
+          "date": "2025-07-01",
+          "value": 1420.0,
+          "label": "07/25"
+        },
+        {
+          "date": "2025-08-01",
+          "value": 1291.0,
+          "label": "08/25"
+        },
+        {
+          "date": "2025-09-01",
+          "value": 1328.0,
+          "label": "09/25"
+        },
+        {
+          "date": "2025-10-01",
+          "value": 1272.0,
+          "label": "10/25"
+        },
+        {
+          "date": "2025-11-01",
+          "value": 1324.0,
+          "label": "11/25"
+        },
+        {
+          "date": "2025-12-01",
+          "value": 1387.0,
+          "label": "12/25"
+        },
+        {
+          "date": "2026-01-01",
+          "value": 1487.0,
+          "label": "01/26"
+        }
+      ]
+    },
+    "building_permits": {
+      "label": "Building Permits (thousands)",
+      "unit": "K",
+      "data": [
+        {
+          "date": "2024-01-01",
+          "value": 1545.0,
+          "label": "01/24"
+        },
+        {
+          "date": "2024-02-01",
+          "value": 1577.0,
+          "label": "02/24"
+        },
+        {
+          "date": "2024-03-01",
+          "value": 1476.0,
+          "label": "03/24"
+        },
+        {
+          "date": "2024-04-01",
+          "value": 1459.0,
+          "label": "04/24"
+        },
+        {
+          "date": "2024-05-01",
+          "value": 1407.0,
+          "label": "05/24"
+        },
+        {
+          "date": "2024-06-01",
+          "value": 1461.0,
+          "label": "06/24"
+        },
+        {
+          "date": "2024-07-01",
+          "value": 1436.0,
+          "label": "07/24"
+        },
+        {
+          "date": "2024-08-01",
+          "value": 1476.0,
+          "label": "08/24"
+        },
+        {
+          "date": "2024-09-01",
+          "value": 1434.0,
+          "label": "09/24"
+        },
+        {
+          "date": "2024-10-01",
+          "value": 1428.0,
+          "label": "10/24"
+        },
+        {
+          "date": "2024-11-01",
+          "value": 1508.0,
+          "label": "11/24"
+        },
+        {
+          "date": "2024-12-01",
+          "value": 1480.0,
+          "label": "12/24"
+        },
+        {
+          "date": "2025-01-01",
+          "value": 1460.0,
+          "label": "01/25"
+        },
+        {
+          "date": "2025-02-01",
+          "value": 1454.0,
+          "label": "02/25"
+        },
+        {
+          "date": "2025-03-01",
+          "value": 1481.0,
+          "label": "03/25"
+        },
+        {
+          "date": "2025-04-01",
+          "value": 1422.0,
+          "label": "04/25"
+        },
+        {
+          "date": "2025-05-01",
+          "value": 1394.0,
+          "label": "05/25"
+        },
+        {
+          "date": "2025-06-01",
+          "value": 1393.0,
+          "label": "06/25"
+        },
+        {
+          "date": "2025-07-01",
+          "value": 1362.0,
+          "label": "07/25"
+        },
+        {
+          "date": "2025-08-01",
+          "value": 1330.0,
+          "label": "08/25"
+        },
+        {
+          "date": "2025-09-01",
+          "value": 1415.0,
+          "label": "09/25"
+        },
+        {
+          "date": "2025-10-01",
+          "value": 1411.0,
+          "label": "10/25"
+        },
+        {
+          "date": "2025-11-01",
+          "value": 1388.0,
+          "label": "11/25"
+        },
+        {
+          "date": "2025-12-01",
+          "value": 1455.0,
+          "label": "12/25"
+        },
+        {
+          "date": "2026-01-01",
+          "value": 1386.0,
+          "label": "01/26"
+        }
+      ]
+    },
+    "treasury_10yr": {
+      "label": "10-Year Treasury Rate",
+      "unit": "%",
+      "data": [
+        {
+          "date": "2026-01-07",
+          "value": 4.15,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-08",
+          "value": 4.19,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-09",
+          "value": 4.18,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-12",
+          "value": 4.19,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-13",
+          "value": 4.18,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-14",
+          "value": 4.15,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-15",
+          "value": 4.17,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-16",
+          "value": 4.24,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-20",
+          "value": 4.3,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-21",
+          "value": 4.26,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-22",
+          "value": 4.26,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-23",
+          "value": 4.24,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-26",
+          "value": 4.22,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-27",
+          "value": 4.24,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-28",
+          "value": 4.26,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-29",
+          "value": 4.24,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-01-30",
+          "value": 4.26,
+          "label": "01/26"
+        },
+        {
+          "date": "2026-02-02",
+          "value": 4.29,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-03",
+          "value": 4.28,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-04",
+          "value": 4.29,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-05",
+          "value": 4.21,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-06",
+          "value": 4.22,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-09",
+          "value": 4.22,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-10",
+          "value": 4.16,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-11",
+          "value": 4.18,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-12",
+          "value": 4.09,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-13",
+          "value": 4.04,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-17",
+          "value": 4.05,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-18",
+          "value": 4.09,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-19",
+          "value": 4.08,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-20",
+          "value": 4.08,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-23",
+          "value": 4.03,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-24",
+          "value": 4.04,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-25",
+          "value": 4.05,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-26",
+          "value": 4.02,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-02-27",
+          "value": 3.97,
+          "label": "02/26"
+        },
+        {
+          "date": "2026-03-02",
+          "value": 4.05,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-03",
+          "value": 4.06,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-04",
+          "value": 4.09,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-05",
+          "value": 4.13,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-06",
+          "value": 4.15,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-09",
+          "value": 4.12,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-10",
+          "value": 4.15,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-11",
+          "value": 4.21,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-12",
+          "value": 4.27,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-13",
+          "value": 4.28,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-16",
+          "value": 4.23,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-17",
+          "value": 4.2,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-18",
+          "value": 4.26,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-19",
+          "value": 4.25,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-20",
+          "value": 4.39,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-23",
+          "value": 4.34,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-24",
+          "value": 4.39,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-25",
+          "value": 4.33,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-26",
+          "value": 4.42,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-27",
+          "value": 4.44,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-30",
+          "value": 4.35,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-03-31",
+          "value": 4.3,
+          "label": "03/26"
+        },
+        {
+          "date": "2026-04-01",
+          "value": 4.33,
+          "label": "04/26"
+        },
+        {
+          "date": "2026-04-02",
+          "value": 4.31,
+          "label": "04/26"
+        }
+      ]
+    }
+  },
+  "osm": {
+    "total": 575,
+    "radius": 800,
+    "categories": {
+      "dining": {
+        "label": "Dining & Nightlife",
+        "count": 175,
+        "items": [
+          {
+            "name": "Canteen",
+            "lat": 40.6805189,
+            "lon": -73.9689812,
+            "type": "fast_food"
+          },
+          {
+            "name": "Brooklyn Homeslice Pizzeria",
+            "lat": 40.6807282,
+            "lon": -73.9675584,
+            "type": "fast_food"
+          },
+          {
+            "name": "Myrtle Ave. Bagels",
+            "lat": 40.6929818,
+            "lon": -73.9693685,
+            "type": "fast_food"
+          },
+          {
+            "name": "Mario's Pizzeria",
+            "lat": 40.689395,
+            "lon": -73.9704066,
+            "type": "fast_food"
+          },
+          {
+            "name": "Pho You",
+            "lat": 40.6827885,
+            "lon": -73.9642267,
+            "type": "fast_food"
+          },
+          {
+            "name": "Fast Life Pizzeria",
+            "lat": 40.6828105,
+            "lon": -73.9630621,
+            "type": "fast_food"
+          },
+          {
+            "name": "Hong Kong Cafe",
+            "lat": 40.6871959,
+            "lon": -73.9567201,
+            "type": "fast_food"
+          },
+          {
+            "name": "New Peking",
+            "lat": 40.6887335,
+            "lon": -73.96013,
+            "type": "fast_food"
+          },
+          {
+            "name": "Famous Joe Pizzeria",
+            "lat": 40.6905905,
+            "lon": -73.9571135,
+            "type": "fast_food"
+          },
+          {
+            "name": "Move With Grace",
+            "lat": 40.6932744,
+            "lon": -73.968499,
+            "type": "fast_food"
+          }
+        ]
+      },
+      "health": {
+        "label": "Healthcare",
+        "count": 23,
+        "items": [
+          {
+            "name": "First Response Urgent Care & Medical Center",
+            "lat": 40.6830038,
+            "lon": -73.9639684,
+            "type": "clinic"
+          },
+          {
+            "name": "Prominis Clinton Hill",
+            "lat": 40.6896186,
+            "lon": -73.9647005,
+            "type": "clinic"
+          },
+          {
+            "name": "Juno",
+            "lat": 40.6831743,
+            "lon": -73.9732439,
+            "type": "clinic"
+          },
+          {
+            "name": "Start Treatment & Recovery Centers",
+            "lat": 40.6833864,
+            "lon": -73.9657446,
+            "type": "clinic"
+          },
+          {
+            "name": "Sunrise Medical Group",
+            "lat": 40.6825123,
+            "lon": -73.9664858,
+            "type": "clinic"
+          },
+          {
+            "name": "MedRite Urgent Care",
+            "lat": 40.6933792,
+            "lon": -73.9648262,
+            "type": "clinic"
+          },
+          {
+            "name": "55 Greene Avenue Medical Suites",
+            "lat": 40.6862164,
+            "lon": -73.9712002,
+            "type": "clinic"
+          },
+          {
+            "name": "Allied Physicians Clinton Hill",
+            "lat": 40.6889343,
+            "lon": -73.9584084,
+            "type": "clinic"
+          },
+          {
+            "name": "Maimonides Doctors Clinton Hill Pavilion",
+            "lat": 40.6818533,
+            "lon": -73.9670703,
+            "type": "clinic"
+          },
+          {
+            "name": "Tribeca Dental Associates",
+            "lat": 40.6878059,
+            "lon": -73.9578549,
+            "type": "dentist"
+          }
+        ]
+      },
+      "education": {
+        "label": "Education & Childcare",
+        "count": 13,
+        "items": [
+          {
+            "name": "Bethel Seventh Day Adventist School",
+            "lat": 40.6816269,
+            "lon": -73.9612725,
+            "type": "school"
+          },
+          {
+            "name": "The Child Study Center of New York",
+            "lat": 40.6926447,
+            "lon": -73.9705788,
+            "type": "kindergarten"
+          },
+          {
+            "name": "Bedford Stuyvesant Early Childhood Development Center",
+            "lat": 40.6858748,
+            "lon": -73.9610776,
+            "type": "kindergarten"
+          },
+          {
+            "name": "The Learning Experience",
+            "lat": 40.6882651,
+            "lon": -73.9576111,
+            "type": "kindergarten"
+          },
+          {
+            "name": "Discovery PitStop",
+            "lat": 40.6843417,
+            "lon": -73.9679027,
+            "type": "kindergarten"
+          },
+          {
+            "name": "Little Sun People",
+            "lat": 40.6884657,
+            "lon": -73.9600701,
+            "type": "kindergarten"
+          },
+          {
+            "name": "Brooklyn Doodles",
+            "lat": 40.6830815,
+            "lon": -73.9606374,
+            "type": "childcare"
+          },
+          {
+            "name": "Young Minds Day Care Center",
+            "lat": 40.6823415,
+            "lon": -73.9620935,
+            "type": "childcare"
+          },
+          {
+            "name": "Eladia's Kids",
+            "lat": 40.6838447,
+            "lon": -73.9651714,
+            "type": "childcare"
+          },
+          {
+            "name": "Shining Smiles",
+            "lat": 40.6831853,
+            "lon": -73.9661758,
+            "type": "childcare"
+          }
+        ]
+      },
+      "transit": {
+        "label": "Transit Infrastructure",
+        "count": 21,
+        "items": [
+          {
+            "name": "Citi Bike - Clermont Ave & Lafayette Ave",
+            "lat": 40.6876448,
+            "lon": -73.969689,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - Clinton Ave & Myrtle Ave",
+            "lat": 40.693261,
+            "lon": -73.968896,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - Cumberland St & Lafayette Ave",
+            "lat": 40.6875341,
+            "lon": -73.9726518,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - DeKalb Ave & Vanderbilt Ave",
+            "lat": 40.6894075,
+            "lon": -73.9688546,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - Emerson Pl & Myrtle Ave",
+            "lat": 40.6936314,
+            "lon": -73.9622356,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - Fulton St & Clermont Ave",
+            "lat": 40.6841575,
+            "lon": -73.9692227,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - Lafayette Ave & St James Pl",
+            "lat": 40.6885153,
+            "lon": -73.9647628,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - Lexington Ave & Classon Ave",
+            "lat": 40.6867679,
+            "lon": -73.9592817,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - Monroe St & Classon Ave",
+            "lat": 40.6845571,
+            "lon": -73.958791,
+            "type": "bicycle_rental"
+          },
+          {
+            "name": "Citi Bike - S Portland Ave & Hanson Pl",
+            "lat": 40.6853932,
+            "lon": -73.974326,
+            "type": "bicycle_rental"
+          }
+        ]
+      },
+      "worship": {
+        "label": "Places of Worship",
+        "count": 7,
+        "items": [
+          {
+            "name": "Eglise Baptiste d'Expression Francaise",
+            "lat": 40.6913569,
+            "lon": -73.970039,
+            "type": "place_of_worship"
+          },
+          {
+            "name": "Revelation Church of God in Christ",
+            "lat": 40.6933083,
+            "lon": -73.9683009,
+            "type": "place_of_worship"
+          },
+          {
+            "name": "Pratt Chapel",
+            "lat": 40.6913673,
+            "lon": -73.9637634,
+            "type": "place_of_worship"
+          },
+          {
+            "name": "Life In Its Poetic Form Christian Ministries",
+            "lat": 40.6805083,
+            "lon": -73.9641106,
+            "type": "place_of_worship"
+          },
+          {
+            "name": "Bishop Memorial Mission",
+            "lat": 40.6935917,
+            "lon": -73.9620314,
+            "type": "place_of_worship"
+          },
+          {
+            "name": "Prevailing Word Ministries",
+            "lat": 40.6844256,
+            "lon": -73.9703854,
+            "type": "place_of_worship"
+          },
+          {
+            "name": "Masjid-Al-Ihsaan",
+            "lat": 40.683021,
+            "lon": -73.9640484,
+            "type": "place_of_worship"
+          }
+        ]
+      },
+      "services": {
+        "label": "Community Services",
+        "count": 6,
+        "items": [
+          {
+            "name": "Ridgewood Savings Bank",
+            "lat": 40.6822983,
+            "lon": -73.9604727,
+            "type": "bank"
+          },
+          {
+            "name": "TD Bank",
+            "lat": 40.6932822,
+            "lon": -73.965652,
+            "type": "bank"
+          },
+          {
+            "name": "Apple Bank",
+            "lat": 40.6929751,
+            "lon": -73.9690989,
+            "type": "bank"
+          },
+          {
+            "name": "Chase",
+            "lat": 40.6929886,
+            "lon": -73.9696036,
+            "type": "bank"
+          },
+          {
+            "name": "Citibank",
+            "lat": 40.6930276,
+            "lon": -73.9684575,
+            "type": "bank"
+          }
+        ]
+      }
+    },
+    "type_counts": {
+      "bicycle_parking": 104,
+      "bench": 92,
+      "restaurant": 68,
+      "waste_basket": 67,
+      "fast_food": 42,
+      "bar": 31,
+      "cafe": 29,
+      "bicycle_rental": 21,
+      "post_box": 15,
+      "clinic": 9,
+      "dentist": 8,
+      "place_of_worship": 7,
+      "childcare": 7,
+      "drinking_water": 6,
+      "social_facility": 6,
+      "pub": 5,
+      "kindergarten": 5,
+      "bank": 5,
+      "pharmacy": 5,
+      "recycling": 5
+    }
+  },
+  "evictions": {
+    "total": 500,
+    "by_year": {
+      "2024": 66,
+      "2025": 354,
+      "2026": 80
+    },
+    "by_neighborhood": {
+      "Stuyvesant Heights": 221,
+      "Bedford": 163,
+      "Crown Heights North": 71,
+      "Clinton Hill": 33,
+      "Ocean Hill": 9,
+      "Bushwick South": 3
+    }
   }
 }
