@@ -1,0 +1,224 @@
+{
+  "model_type": "log_linear_hedonic",
+  "r2": 0.8181,
+  "adj_r2": 0.7926,
+  "n_comps": 180,
+  "n_features": 22,
+  "median_price": 5246500.0,
+  "coefficients": {
+    "intercept": 7.215008,
+    "interior_sf": 1.09293,
+    "bedrooms": -0.270097,
+    "bathrooms": 0.433678,
+    "floor_level": 0.004586,
+    "year_built": -0.000203,
+    "has_doorman": -0.043825,
+    "has_elevator": -0.058676,
+    "has_gym": 0.134538,
+    "has_pool": 0.134575,
+    "has_parking": -0.101614,
+    "has_concierge": -0.033399,
+    "has_rooftop_access": -0.016776,
+    "has_storage": 0.062249,
+    "has_washer_dryer": 0.019338,
+    "is_corner_unit": -0.05082,
+    "is_renovated": -0.005648,
+    "is_new_development": 0.038314,
+    "is_loft": 0.184693,
+    "has_fireplace": 0.028452,
+    "is_condo": -0.012448,
+    "subway_dist_ft": -0.042294,
+    "school_rating": -0.000101
+  },
+  "feature_names": [
+    "interior_sf",
+    "bedrooms",
+    "bathrooms",
+    "floor_level",
+    "year_built",
+    "has_doorman",
+    "has_elevator",
+    "has_gym",
+    "has_pool",
+    "has_parking",
+    "has_concierge",
+    "has_rooftop_access",
+    "has_storage",
+    "has_washer_dryer",
+    "is_corner_unit",
+    "is_renovated",
+    "is_new_development",
+    "is_loft",
+    "has_fireplace",
+    "is_condo",
+    "subway_dist_ft",
+    "school_rating"
+  ],
+  "log_transformed": [
+    "interior_sf",
+    "subway_dist_ft"
+  ],
+  "premiums": [
+    {
+      "feature": "bathrooms",
+      "label": "Bathrooms",
+      "coeff": 0.4337,
+      "pct_premium": 54.3,
+      "dollar_premium": 2848439.0,
+      "type": "premium"
+    },
+    {
+      "feature": "bedrooms",
+      "label": "Bedrooms",
+      "coeff": -0.2701,
+      "pct_premium": -23.7,
+      "dollar_premium": -1241820.0,
+      "type": "premium"
+    },
+    {
+      "feature": "is_loft",
+      "label": "Is Loft",
+      "coeff": 0.1847,
+      "pct_premium": 20.3,
+      "dollar_premium": 1064248.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_pool",
+      "label": "Has Pool",
+      "coeff": 0.1346,
+      "pct_premium": 14.4,
+      "dollar_premium": 755759.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_gym",
+      "label": "Has Gym",
+      "coeff": 0.1345,
+      "pct_premium": 14.4,
+      "dollar_premium": 755540.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_parking",
+      "label": "Has Parking",
+      "coeff": -0.1016,
+      "pct_premium": -9.7,
+      "dollar_premium": -506928.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_storage",
+      "label": "Has Storage",
+      "coeff": 0.0622,
+      "pct_premium": 6.4,
+      "dollar_premium": 336968.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_elevator",
+      "label": "Has Elevator",
+      "coeff": -0.0587,
+      "pct_premium": -5.7,
+      "dollar_premium": -298984.0,
+      "type": "premium"
+    },
+    {
+      "feature": "is_corner_unit",
+      "label": "Is Corner Unit",
+      "coeff": -0.0508,
+      "pct_premium": -5.0,
+      "dollar_premium": -259965.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_doorman",
+      "label": "Has Doorman",
+      "coeff": -0.0438,
+      "pct_premium": -4.3,
+      "dollar_premium": -224962.0,
+      "type": "premium"
+    },
+    {
+      "feature": "is_new_development",
+      "label": "Is New Development",
+      "coeff": 0.0383,
+      "pct_premium": 3.9,
+      "dollar_premium": 204917.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_concierge",
+      "label": "Has Concierge",
+      "coeff": -0.0334,
+      "pct_premium": -3.3,
+      "dollar_premium": -172333.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_fireplace",
+      "label": "Has Fireplace",
+      "coeff": 0.0285,
+      "pct_premium": 2.9,
+      "dollar_premium": 151415.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_washer_dryer",
+      "label": "Has Washer Dryer",
+      "coeff": 0.0193,
+      "pct_premium": 2.0,
+      "dollar_premium": 102443.0,
+      "type": "premium"
+    },
+    {
+      "feature": "has_rooftop_access",
+      "label": "Has Rooftop Access",
+      "coeff": -0.0168,
+      "pct_premium": -1.7,
+      "dollar_premium": -87279.0,
+      "type": "premium"
+    },
+    {
+      "feature": "is_condo",
+      "label": "Is Condo",
+      "coeff": -0.0124,
+      "pct_premium": -1.2,
+      "dollar_premium": -64903.0,
+      "type": "premium"
+    },
+    {
+      "feature": "is_renovated",
+      "label": "Is Renovated",
+      "coeff": -0.0056,
+      "pct_premium": -0.6,
+      "dollar_premium": -29549.0,
+      "type": "premium"
+    },
+    {
+      "feature": "floor_level",
+      "label": "Floor Level",
+      "coeff": 0.0046,
+      "pct_premium": 0.5,
+      "dollar_premium": 24114.0,
+      "type": "premium"
+    },
+    {
+      "feature": "year_built",
+      "label": "Year Built",
+      "coeff": -0.0002,
+      "pct_premium": -0.0,
+      "dollar_premium": -1064.0,
+      "type": "premium"
+    },
+    {
+      "feature": "school_rating",
+      "label": "School Rating",
+      "coeff": -0.0001,
+      "pct_premium": -0.0,
+      "dollar_premium": -529.0,
+      "type": "premium"
+    }
+  ],
+  "usage": "To predict: logP = intercept + sum(coeff[f] * value[f]). Apply Math.log() to features in log_transformed before multiplying. Final price = Math.exp(logP)."
+}

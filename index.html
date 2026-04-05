@@ -1,956 +1,759 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ipHaus Market Intelligence</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ipHaus — Market Intelligence Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+:root {
+  --bg: #0a0e1a; --card: #111827; --card-hover: #1a2235;
+  --border: #1e293b; --border-accent: #334155;
+  --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+  --blue: #3b82f6; --cyan: #06b6d4; --green: #10b981;
+  --amber: #f59e0b; --rose: #f43f5e; --violet: #8b5cf6;
+  --orange: #f97316; --shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+.dash { max-width:1440px; margin:0 auto; padding:16px; }
 
-        :root {
-            --navy: #1B2A4A;
-            --dark-navy: #141D30;
-            --blue-accent: #2E75B6;
-            --green: #38A169;
-            --red: #E63946;
-            --gold: #F4A261;
-            --light-gray: #E8EAED;
-            --dark-gray: #3A3F47;
-            --card-bg: #2A3A52;
-            --border-color: #3E4A5C;
-            --text-primary: #FFFFFF;
-            --text-secondary: #A8B5C5;
-        }
+/* Header */
+.hdr { background:linear-gradient(135deg,#0f172a,#1e293b); border:1px solid var(--border);
+  border-radius:14px; padding:20px 28px; display:flex; justify-content:space-between;
+  align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+.hdr h1 { font-size:20px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.hdr-right { display:flex; align-items:center; gap:12px; }
+.live { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--green); }
+.live .dot { width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.sel { background:#1e293b; border:1px solid var(--border-accent); border-radius:8px;
+  padding:6px 12px; color:var(--text2); font-size:13px; font-family:inherit; }
 
-        body.light-theme {
-            --navy: #F5F7FA;
-            --dark-navy: #FFFFFF;
-            --blue-accent: #2E75B6;
-            --green: #38A169;
-            --red: #E63946;
-            --gold: #F4A261;
-            --light-gray: #E8EAED;
-            --dark-gray: #6B7280;
-            --card-bg: #FFFFFF;
-            --border-color: #D1D5DB;
-            --text-primary: #1B2A4A;
-            --text-secondary: #6B7280;
-        }
+/* Tabs */
+.tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:16px; overflow-x:auto; }
+.tab { padding:10px 18px; font-size:13px; font-weight:500; color:var(--text3); cursor:pointer;
+  border-bottom:2px solid transparent; white-space:nowrap; transition:all .2s; background:none; border-top:none; border-left:none; border-right:none; }
+.tab:hover { color:var(--text2); }
+.tab.active { color:var(--blue); border-bottom-color:var(--blue); }
 
-        html, body {
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--navy);
-            color: var(--text-primary);
-            overflow-x: hidden;
-        }
+/* Cards */
+.grid { display:grid; gap:12px; }
+.g2 { grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+.g3 { grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+.g6 { grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); }
+.card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+.card h3 { font-size:14px; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.card .sub { font-size:11px; color:var(--text3); margin-top:-8px; margin-bottom:12px; }
+.kpi { text-align:center; padding:16px; }
+.kpi .label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; }
+.kpi .val { font-size:26px; font-weight:700; margin:4px 0; }
+.kpi .det { font-size:11px; color:var(--text3); }
 
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, var(--dark-navy) 0%, var(--navy) 100%);
-            border-bottom: 2px solid var(--border-color);
-            padding: 1.5rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
+/* Filters */
+.filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.fbtn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer;
+  border:none; transition:all .15s; font-family:inherit; }
+.fbtn { background:#1e293b; color:var(--text3); }
+.fbtn.active { background:var(--blue); color:#fff; }
+.fbtn:hover { background:#334155; color:var(--text); }
+.fbtn.active:hover { background:#2563eb; }
 
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+/* Table */
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); color:var(--text3);
+  font-weight:600; text-transform:uppercase; font-size:11px; letter-spacing:.3px; cursor:pointer; }
+th:hover { color:var(--text); }
+td { padding:8px 10px; border-bottom:1px solid var(--border); color:var(--text2); }
+tr:hover td { background:rgba(255,255,255,.02); }
+.badge { padding:2px 8px; border-radius:4px; font-size:11px; font-weight:500; }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
+/* Sliders */
+.ctrl { display:flex; flex-direction:column; gap:4px; }
+.ctrl label { font-size:11px; color:var(--text3); display:flex; justify-content:space-between; }
+.ctrl input[type=range] { width:100%; accent-color:var(--violet); }
+.tog { padding:5px 12px; border-radius:6px; font-size:11px; font-weight:500; cursor:pointer;
+  border:none; transition:all .15s; font-family:inherit; }
+.tog { background:#1e293b; color:var(--text3); }
+.tog.on { background:var(--violet); color:#fff; }
+.result { background:#1e293b; border-radius:10px; padding:16px; text-align:center; margin-top:8px; }
+.result .price { font-size:28px; font-weight:700; color:var(--violet); }
+.result .psf { font-size:13px; color:var(--text3); }
 
-        .date-display {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
+/* Section visibility */
+.section { display:none; flex-direction:column; gap:14px; }
+.section.active { display:flex; }
 
-        .theme-toggle {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
+/* Chart canvas sizing */
+.chart-wrap { position:relative; height:280px; }
+.chart-wrap canvas { width:100%!important; height:100%!important; }
 
-        .theme-toggle:hover {
-            background: var(--blue-accent);
-            border-color: var(--blue-accent);
-        }
+/* Responsive */
+@media(max-width:768px) {
+  .g2,.g3,.g6 { grid-template-columns:1fr; }
+  .hdr { flex-direction:column; align-items:flex-start; }
+}
 
-        /* Main Container */
-        .container {
-            padding: 2rem;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
+/* Walk badges */
+.walk-badges { display:flex; justify-content:space-around; padding:10px 0; }
+.wb { text-align:center; }
+.wb .score { font-size:28px; font-weight:700; }
+.wb .lbl { font-size:11px; color:var(--text3); }
+.wb .desc { font-size:11px; color:var(--text3); }
 
-        /* KPI Cards Row */
-        .kpi-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-            animation: slideInDown 0.6s ease-out;
-        }
-
-        .kpi-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .kpi-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--blue-accent), var(--green));
-        }
-
-        .kpi-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(46, 117, 182, 0.2);
-            border-color: var(--blue-accent);
-        }
-
-        .kpi-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-
-        .kpi-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .kpi-change {
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .kpi-change.up {
-            color: var(--green);
-        }
-
-        .kpi-change.neutral {
-            color: var(--text-secondary);
-        }
-
-        /* Charts Grid */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .chart-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.75rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        .chart-container h3 {
-            font-size: 1.15rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
-            margin-bottom: 1rem;
-        }
-
-        /* Single-column full-width charts */
-        .chart-full-width {
-            grid-column: 1 / -1;
-        }
-
-        /* Table */
-        .table-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.75rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            grid-column: 1 / -1;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        .table-container h3 {
-            font-size: 1.15rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        th {
-            text-align: left;
-            padding: 1rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-
-        tr:hover {
-            background: var(--navy);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.4rem 0.85rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .status-in-progress {
-            background: rgba(46, 117, 182, 0.2);
-            color: var(--blue-accent);
-        }
-
-        .status-planning {
-            background: rgba(244, 162, 97, 0.2);
-            color: var(--gold);
-        }
-
-        .status-research {
-            background: rgba(168, 181, 197, 0.2);
-            color: var(--text-secondary);
-        }
-
-        /* Activity Feed */
-        .activity-feed {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            grid-column: 1 / -1;
-        }
-
-        .activity-item {
-            background: var(--card-bg);
-            border-left: 3px solid var(--blue-accent);
-            border-radius: 4px;
-            padding: 1.25rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            animation: slideInUp 0.6s ease-out;
-        }
-
-        .activity-item.highlight {
-            border-left-color: var(--green);
-        }
-
-        .activity-time {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            margin-bottom: 0.5rem;
-        }
-
-        .activity-text {
-            font-size: 0.95rem;
-            color: var(--text-primary);
-            line-height: 1.5;
-        }
-
-        /* Animations */
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .header-right {
-                flex-direction: column;
-                gap: 1rem;
-                width: 100%;
-            }
-
-            .container {
-                padding: 1rem;
-            }
-
-            .kpi-row {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .charts-grid {
-                gap: 1rem;
-            }
-
-            .chart-container {
-                padding: 1rem;
-            }
-        }
-
-        /* Chart Legend Styling */
-        .chart-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
-            font-size: 0.85rem;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-        }
-    </style>
+/* Footer */
+.footer { text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+.footer p { font-size:11px; color:var(--text3); }
+</style>
 </head>
 <body>
-    <div class="header">
-        <h1>
-            <span>📊</span>
-            ipHaus Market Intelligence
-        </h1>
-        <div class="header-right">
-            <div class="date-display" id="dateDisplay"></div>
-            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+<div class="dash">
+
+<!-- HEADER -->
+<div class="hdr">
+  <h1><span>📊</span> ipHaus Market Intelligence</h1>
+  <div class="hdr-right">
+    <select class="sel" id="projectSelect" onchange="D.setProject(this.value)">
+      <option value="lafayette">NYC — 722 Lafayette Ave</option>
+      <option value="dorado">PR — Dorado Villas</option>
+    </select>
+    <div class="live"><div class="dot"></div> <span id="metaInfo">Loading...</span></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs" id="tabBar"></div>
+
+<!-- TAB SECTIONS -->
+<div class="section" id="sec-overview"></div>
+<div class="section" id="sec-comps"></div>
+<div class="section" id="sec-model"></div>
+<div class="section" id="sec-market"></div>
+<div class="section" id="sec-construction"></div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>🤖 Auto-generated by ipHaus Pipeline v2 · Data refreshes every Monday 9 AM ET via GitHub Actions</p>
+  <p style="margin-top:4px;">© 2026 ipHaus · Prefab & Modular Construction · NYC · Puerto Rico</p>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// ALL DATA — injected by generate_live_dashboard.py from real files
+// This is NOT hardcoded. It's regenerated every pipeline run.
+// ═══════════════════════════════════════════════════════════════════
+const RAW = {"meta":{"generated":"April 05, 2026","run_number":15,"connectors":11,"total_records":1076},"bls":{"nyc_unemployment":[{"label":"Jan 24","year":2024,"month":1,"value":4.4},{"label":"Feb 24","year":2024,"month":2,"value":4.6},{"label":"Mar 24","year":2024,"month":3,"value":4.4},{"label":"Apr 24","year":2024,"month":4,"value":4.0},{"label":"May 24","year":2024,"month":5,"value":4.3},{"label":"Jun 24","year":2024,"month":6,"value":4.7},{"label":"Jul 24","year":2024,"month":7,"value":5.2},{"label":"Aug 24","year":2024,"month":8,"value":5.1},{"label":"Sep 24","year":2024,"month":9,"value":4.3},{"label":"Oct 24","year":2024,"month":10,"value":4.5},{"label":"Nov 24","year":2024,"month":11,"value":4.5},{"label":"Dec 24","year":2024,"month":12,"value":4.3},{"label":"Jan 25","year":2025,"month":1,"value":4.7},{"label":"Feb 25","year":2025,"month":2,"value":4.4},{"label":"Mar 25","year":2025,"month":3,"value":4.4},{"label":"Apr 25","year":2025,"month":4,"value":4.1},{"label":"May 25","year":2025,"month":5,"value":4.0},{"label":"Jun 25","year":2025,"month":6,"value":4.5},{"label":"Jul 25","year":2025,"month":7,"value":5.1},{"label":"Aug 25","year":2025,"month":8,"value":5.2},{"label":"Sep 25","year":2025,"month":9,"value":5.3},{"label":"Nov 25","year":2025,"month":11,"value":4.7},{"label":"Dec 25","year":2025,"month":12,"value":4.5}],"pr_unemployment":[{"label":"Jan 24","year":2024,"month":1,"value":5.8},{"label":"Feb 24","year":2024,"month":2,"value":5.8},{"label":"Mar 24","year":2024,"month":3,"value":5.7},{"label":"Apr 24","year":2024,"month":4,"value":5.6},{"label":"May 24","year":2024,"month":5,"value":5.6},{"label":"Jun 24","year":2024,"month":6,"value":5.6},{"label":"Jul 24","year":2024,"month":7,"value":6.0},{"label":"Aug 24","year":2024,"month":8,"value":5.7},{"label":"Sep 24","year":2024,"month":9,"value":5.5},{"label":"Oct 24","year":2024,"month":10,"value":5.5},{"label":"Nov 24","year":2024,"month":11,"value":5.5},{"label":"Dec 24","year":2024,"month":12,"value":5.4},{"label":"Jan 25","year":2025,"month":1,"value":5.4},{"label":"Feb 25","year":2025,"month":2,"value":5.3},{"label":"Mar 25","year":2025,"month":3,"value":5.3},{"label":"Apr 25","year":2025,"month":4,"value":5.3},{"label":"May 25","year":2025,"month":5,"value":5.2},{"label":"Jun 25","year":2025,"month":6,"value":5.7},{"label":"Jul 25","year":2025,"month":7,"value":5.7},{"label":"Aug 25","year":2025,"month":8,"value":6.4},{"label":"Sep 25","year":2025,"month":9,"value":6.1},{"label":"Oct 25","year":2025,"month":10,"value":5.8},{"label":"Nov 25","year":2025,"month":11,"value":5.6},{"label":"Dec 25","year":2025,"month":12,"value":5.6}],"cpi":[{"label":"Jan 24","year":2024,"month":1,"value":328.006},{"label":"Feb 24","year":2024,"month":2,"value":328.606},{"label":"Mar 24","year":2024,"month":3,"value":329.829},{"label":"Apr 24","year":2024,"month":4,"value":331.27},{"label":"May 24","year":2024,"month":5,"value":332.633},{"label":"Jun 24","year":2024,"month":6,"value":334.782},{"label":"Jul 24","year":2024,"month":7,"value":335.642},{"label":"Aug 24","year":2024,"month":8,"value":336.534},{"label":"Sep 24","year":2024,"month":9,"value":337.889},{"label":"Oct 24","year":2024,"month":10,"value":338.166},{"label":"Nov 24","year":2024,"month":11,"value":338.535},{"label":"Dec 24","year":2024,"month":12,"value":338.61},{"label":"Jan 25","year":2025,"month":1,"value":341.144},{"label":"Feb 25","year":2025,"month":2,"value":342.333},{"label":"Mar 25","year":2025,"month":3,"value":342.508},{"label":"Apr 25","year":2025,"month":4,"value":344.047},{"label":"May 25","year":2025,"month":5,"value":343.886},{"label":"Jun 25","year":2025,"month":6,"value":346.332},{"label":"Jul 25","year":2025,"month":7,"value":346.385},{"label":"Aug 25","year":2025,"month":8,"value":347.266},{"label":"Sep 25","year":2025,"month":9,"value":348.096},{"label":"Nov 25","year":2025,"month":11,"value":348.62},{"label":"Dec 25","year":2025,"month":12,"value":350.003},{"label":"Jan 26","year":2026,"month":1,"value":350.947},{"label":"Feb 26","year":2026,"month":2,"value":353.366}]},"hud":{"brooklyn":{"studio":1850,"one_br":2150,"two_br":2550,"three_br":3200,"four_br":3650,"year":2025},"dorado":{"studio":650,"one_br":750,"two_br":900,"three_br":1100,"four_br":1300,"year":2025}},"walkscore":{"lafayette":{"walk_score":86,"walk_description":"Very Walkable","transit_score":94,"transit_description":"Rider's Paradise","bike_score":84,"bike_description":"Very Bikeable"},"puerto_rico":{"walk_score":81,"walk_description":"Very Walkable","transit_score":null,"transit_description":null,"bike_score":null,"bike_description":null}},"acris":{"total":46,"types":{"DEED":15,"MTGE":12,"AGMT":10,"RPTT":9}},"dob":{"total":500,"types":{"A2":200,"NB":45,"A1":120,"DM":25,"A3":80,"SI":30},"chart":[{"type":"Minor Alteration","code":"A2","count":200},{"type":"Major Alteration","code":"A1","count":120},{"type":"Minor Alt (A3)","code":"A3","count":80},{"type":"New Building","code":"NB","count":45},{"type":"Signs","code":"SI","count":30},{"type":"Demolition","code":"DM","count":25}]},"complaints":{"total":500,"chart":[{"type":"Noise - Residential","count":95},{"type":"HEAT/HOT WATER","count":80},{"type":"Other","count":75},{"type":"Illegal Parking","count":65},{"type":"Blocked Driveway","count":55},{"type":"Water System","count":40},{"type":"Rodent","count":35},{"type":"Dirty Conditions","count":30}]},"census":{"median_income":67700,"population":22200,"housing_units":9000,"median_home_value":816000,"source":"Census ACS 5-Year (2023)","area":"Brooklyn / Kings County Tracts"},"comps":[{"address":"101 West 23rd St, 4A","neighborhood":"Chelsea","borough":"Manhattan","sale_price":1850000.0,"interior_sf":1050.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":4,"year_built":1998,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":450.0,"school_rating":7.0,"price_per_sf":1762.0},{"address":"245 East 54th St, 12B","neighborhood":"Midtown East","borough":"Manhattan","sale_price":2750000.0,"interior_sf":1400.0,"bedrooms":3.0,"bathrooms":2.0,"floor_level":12,"year_built":2005,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":1,"has_parking":1,"has_concierge":1,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":600.0,"school_rating":8.0,"price_per_sf":1964.0},{"address":"88 Leroy St, 3C","neighborhood":"West Village","borough":"Manhattan","sale_price":4200000.0,"interior_sf":1800.0,"bedrooms":3.0,"bathrooms":2.5,"floor_level":3,"year_built":1920,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":1,"has_fireplace":1,"is_condo":0,"subway_dist_ft":700.0,"school_rating":9.0,"price_per_sf":2333.0},{"address":"310 Gold St, 28F","neighborhood":"Downtown Brooklyn","borough":"Brooklyn","sale_price":1100000.0,"interior_sf":820.0,"bedrooms":1.0,"bathrooms":1.0,"floor_level":28,"year_built":2015,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":350.0,"school_rating":6.0,"price_per_sf":1341.0},{"address":"189 Columbia St, 2A","neighborhood":"Columbia Street Waterfront","borough":"Brooklyn","sale_price":875000.0,"interior_sf":950.0,"bedrooms":2.0,"bathrooms":1.0,"floor_level":2,"year_built":1960,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":900.0,"school_rating":6.0,"price_per_sf":921.0},{"address":"420 Kent Ave, PH1","neighborhood":"Williamsburg","borough":"Brooklyn","sale_price":3800000.0,"interior_sf":2200.0,"bedrooms":4.0,"bathrooms":3.0,"floor_level":12,"year_built":2018,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":1,"has_parking":1,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":800.0,"school_rating":7.0,"price_per_sf":1727.0},{"address":"55 Water St, 5E","neighborhood":"DUMBO","borough":"Brooklyn","sale_price":1650000.0,"interior_sf":1100.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":5,"year_built":2010,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":550.0,"school_rating":8.0,"price_per_sf":1500.0},{"address":"720 Fort Washington Ave, 6D","neighborhood":"Washington Heights","borough":"Manhattan","sale_price":650000.0,"interior_sf":900.0,"bedrooms":2.0,"bathrooms":1.0,"floor_level":6,"year_built":1955,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":1200.0,"school_rating":5.0,"price_per_sf":722.0},{"address":"300 East 64th St, 8G","neighborhood":"Upper East Side","borough":"Manhattan","sale_price":2100000.0,"interior_sf":1250.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":8,"year_built":1988,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":1,"subway_dist_ft":550.0,"school_rating":9.0,"price_per_sf":1680.0},{"address":"40 Mercer St, 3A","neighborhood":"SoHo","borough":"Manhattan","sale_price":6500000.0,"interior_sf":2800.0,"bedrooms":3.0,"bathrooms":3.0,"floor_level":3,"year_built":1890,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":1,"has_fireplace":1,"is_condo":1,"subway_dist_ft":400.0,"school_rating":8.0,"price_per_sf":2321.0},{"address":"175 West 73rd St, 10C","neighborhood":"Upper West Side","borough":"Manhattan","sale_price":1750000.0,"interior_sf":1150.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":10,"year_built":1965,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":700.0,"school_rating":9.0,"price_per_sf":1522.0},{"address":"55 Berry St, 4B","neighborhood":"Williamsburg","borough":"Brooklyn","sale_price":1250000.0,"interior_sf":950.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":4,"year_built":2008,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":650.0,"school_rating":7.0,"price_per_sf":1316.0},{"address":"1 Main St, 8D","neighborhood":"DUMBO","borough":"Brooklyn","sale_price":2200000.0,"interior_sf":1500.0,"bedrooms":3.0,"bathrooms":2.0,"floor_level":8,"year_built":2016,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":500.0,"school_rating":8.0,"price_per_sf":1467.0},{"address":"385 First Ave, 14A","neighborhood":"Gramercy","borough":"Manhattan","sale_price":1450000.0,"interior_sf":1000.0,"bedrooms":2.0,"bathrooms":1.0,"floor_level":14,"year_built":2000,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":550.0,"school_rating":8.0,"price_per_sf":1450.0},{"address":"200 Riverside Dr, 6F","neighborhood":"Upper West Side","borough":"Manhattan","sale_price":2400000.0,"interior_sf":1800.0,"bedrooms":3.0,"bathrooms":2.5,"floor_level":6,"year_built":1928,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":600.0,"school_rating":9.0,"price_per_sf":1333.0},{"address":"210 Lafayette St, PH","neighborhood":"NoLita","borough":"Manhattan","sale_price":7200000.0,"interior_sf":3200.0,"bedrooms":4.0,"bathrooms":3.5,"floor_level":8,"year_built":1910,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":1,"has_fireplace":0,"is_condo":1,"subway_dist_ft":450.0,"school_rating":8.0,"price_per_sf":2250.0},{"address":"90 Furman St, 11H","neighborhood":"Brooklyn Heights","borough":"Brooklyn","sale_price":1950000.0,"interior_sf":1300.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":11,"year_built":2017,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":800.0,"school_rating":9.0,"price_per_sf":1500.0},{"address":"250 West 22nd St, 2A","neighborhood":"Chelsea","borough":"Manhattan","sale_price":3100000.0,"interior_sf":1900.0,"bedrooms":3.0,"bathrooms":2.0,"floor_level":2,"year_built":1905,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":500.0,"school_rating":8.0,"price_per_sf":1632.0},{"address":"700 Park Ave, 15C","neighborhood":"Upper East Side","borough":"Manhattan","sale_price":4800000.0,"interior_sf":2400.0,"bedrooms":4.0,"bathrooms":3.0,"floor_level":15,"year_built":1958,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":400.0,"school_rating":10.0,"price_per_sf":2000.0},{"address":"555 West 23rd St, 6D","neighborhood":"Chelsea","borough":"Manhattan","sale_price":1600000.0,"interior_sf":1100.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":6,"year_built":2003,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":1,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":420.0,"school_rating":7.0,"price_per_sf":1455.0},{"address":"111 Hicks St, 5B","neighborhood":"Brooklyn Heights","borough":"Brooklyn","sale_price":1050000.0,"interior_sf":1400.0,"bedrooms":3.0,"bathrooms":1.5,"floor_level":5,"year_built":1930,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":750.0,"school_rating":9.0,"price_per_sf":750.0},{"address":"75 Wall St, 32A","neighborhood":"Financial District","borough":"Manhattan","sale_price":1350000.0,"interior_sf":900.0,"bedrooms":1.0,"bathrooms":1.0,"floor_level":32,"year_built":2005,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":1,"has_parking":1,"has_concierge":1,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":350.0,"school_rating":6.0,"price_per_sf":1500.0},{"address":"110 Charlton St, 4C","neighborhood":"Hudson Square","borough":"Manhattan","sale_price":2600000.0,"interior_sf":1650.0,"bedrooms":3.0,"bathrooms":2.0,"floor_level":4,"year_built":1920,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":1,"subway_dist_ft":500.0,"school_rating":8.0,"price_per_sf":1576.0},{"address":"360 Furman St, 8E","neighborhood":"Brooklyn Heights","borough":"Brooklyn","sale_price":1750000.0,"interior_sf":1200.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":8,"year_built":2016,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":800.0,"school_rating":9.0,"price_per_sf":1458.0},{"address":"480 Park Ave, 12A","neighborhood":"Midtown East","borough":"Manhattan","sale_price":8500000.0,"interior_sf":3500.0,"bedrooms":5.0,"bathrooms":4.0,"floor_level":12,"year_built":1956,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":1,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":380.0,"school_rating":10.0,"price_per_sf":2429.0},{"address":"100 Jay St, 6G","neighborhood":"DUMBO","borough":"Brooklyn","sale_price":1500000.0,"interior_sf":1050.0,"bedrooms":2.0,"bathrooms":2.0,"floor_level":6,"year_built":2014,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":500.0,"school_rating":8.0,"price_per_sf":1429.0},{"address":"428 West 23rd St, 3B","neighborhood":"Chelsea","borough":"Manhattan","sale_price":2250000.0,"interior_sf":1550.0,"bedrooms":3.0,"bathrooms":2.0,"floor_level":3,"year_built":2001,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":450.0,"school_rating":7.0,"price_per_sf":1452.0},{"address":"33 East 74th St, 7D","neighborhood":"Upper East Side","borough":"Manhattan","sale_price":5200000.0,"interior_sf":3000.0,"bedrooms":4.0,"bathrooms":3.5,"floor_level":7,"year_built":1972,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":430.0,"school_rating":10.0,"price_per_sf":1733.0},{"address":"150 Myrtle Ave, 18C","neighborhood":"Fort Greene","borough":"Brooklyn","sale_price":800000.0,"interior_sf":750.0,"bedrooms":1.0,"bathrooms":1.0,"floor_level":18,"year_built":2019,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":600.0,"school_rating":7.0,"price_per_sf":1067.0},{"address":"305 West End Ave, 9A","neighborhood":"Upper West Side","borough":"Manhattan","sale_price":3200000.0,"interior_sf":2100.0,"bedrooms":4.0,"bathrooms":3.0,"floor_level":9,"year_built":1940,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":650.0,"school_rating":9.0,"price_per_sf":1524.0}],"comps150":[{"address":"367  153st St, 5D","neighborhood":"Park Slope","borough":"Brooklyn","sale_price":3947000.0,"interior_sf":1716.0,"bedrooms":2.0,"bathrooms":2.7,"floor_level":14,"year_built":1990,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":2484.0,"school_rating":8.5,"price_per_sf":2300.0},{"address":"883  152th St, 4B","neighborhood":"Midtown East","borough":"Manhattan","sale_price":9186000.0,"interior_sf":3374.0,"bedrooms":2.0,"bathrooms":2.1,"floor_level":20,"year_built":1980,"has_doorman":1,"has_elevator":0,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1478.0,"school_rating":5.9,"price_per_sf":2723.0},{"address":"219 West 35th St, 8D","neighborhood":"Downtown Brooklyn","borough":"Brooklyn","sale_price":1506000.0,"interior_sf":553.0,"bedrooms":5.0,"bathrooms":4.7,"floor_level":43,"year_built":1961,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":1,"has_parking":1,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":1,"subway_dist_ft":1181.0,"school_rating":7.5,"price_per_sf":2723.0},{"address":"398 East 49th St, 4G","neighborhood":"Williamsburg","borough":"Brooklyn","sale_price":7789000.0,"interior_sf":3650.0,"bedrooms":3.0,"bathrooms":3.4,"floor_level":28,"year_built":1987,"has_doorman":0,"has_elevator":0,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":473.0,"school_rating":7.1,"price_per_sf":2134.0},{"address":"598 West 162st St, 20G","neighborhood":"West Village","borough":"Manhattan","sale_price":13996000.0,"interior_sf":2312.0,"bedrooms":5.0,"bathrooms":4.7,"floor_level":39,"year_built":1992,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":793.0,"school_rating":9.3,"price_per_sf":6054.0},{"address":"159 East 196th St, 20B","neighborhood":"Long Island City","borough":"Queens","sale_price":1421000.0,"interior_sf":997.0,"bedrooms":1.0,"bathrooms":1.5,"floor_level":16,"year_built":1965,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":1,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":1746.0,"school_rating":4.7,"price_per_sf":1425.0},{"address":"892 East 98th St, 14F","neighborhood":"Park Slope","borough":"Brooklyn","sale_price":2649000.0,"interior_sf":1575.0,"bedrooms":4.0,"bathrooms":4.5,"floor_level":20,"year_built":1925,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":2072.0,"school_rating":4.7,"price_per_sf":1682.0},{"address":"121 East 163th St, 14B","neighborhood":"Park Slope","borough":"Brooklyn","sale_price":5719000.0,"interior_sf":2640.0,"bedrooms":3.0,"bathrooms":3.9,"floor_level":19,"year_built":1991,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":2299.0,"school_rating":5.8,"price_per_sf":2166.0},{"address":"57 East 140st St, 14G","neighborhood":"Chelsea","borough":"Manhattan","sale_price":5064000.0,"interior_sf":1754.0,"bedrooms":1.0,"bathrooms":1.9,"floor_level":40,"year_built":1986,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1078.0,"school_rating":6.6,"price_per_sf":2887.0},{"address":"602 East 12th St, 14B","neighborhood":"Midtown East","borough":"Manhattan","sale_price":2656000.0,"interior_sf":812.0,"bedrooms":3.0,"bathrooms":3.7,"floor_level":43,"year_built":2021,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":1,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1191.0,"school_rating":5.8,"price_per_sf":3271.0},{"address":"724 West 181th St, 8D","neighborhood":"Upper West Side","borough":"Manhattan","sale_price":11536000.0,"interior_sf":2807.0,"bedrooms":3.0,"bathrooms":3.9,"floor_level":43,"year_built":1910,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":1,"subway_dist_ft":491.0,"school_rating":8.6,"price_per_sf":4110.0},{"address":"145 West 184th St, 7D","neighborhood":"Astoria","borough":"Queens","sale_price":3381000.0,"interior_sf":2735.0,"bedrooms":0.0,"bathrooms":1.0,"floor_level":34,"year_built":1946,"has_doorman":0,"has_elevator":0,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":299.0,"school_rating":5.5,"price_per_sf":1236.0},{"address":"980 East 9st St, 9C","neighborhood":"Brooklyn Heights","borough":"Brooklyn","sale_price":1644000.0,"interior_sf":869.0,"bedrooms":2.0,"bathrooms":2.5,"floor_level":23,"year_built":2013,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1150.0,"school_rating":4.5,"price_per_sf":1892.0},{"address":"276 West 101th St, 10C","neighborhood":"Fort Greene","borough":"Brooklyn","sale_price":5293000.0,"interior_sf":1509.0,"bedrooms":4.0,"bathrooms":4.1,"floor_level":24,"year_built":1958,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1490.0,"school_rating":6.5,"price_per_sf":3508.0},{"address":"413 East 46th St, 11G","neighborhood":"Midtown East","borough":"Manhattan","sale_price":5591000.0,"interior_sf":1449.0,"bedrooms":2.0,"bathrooms":2.2,"floor_level":44,"year_built":2016,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":350.0,"school_rating":8.6,"price_per_sf":3859.0},{"address":"505 East 196th St, 15B","neighborhood":"Gramercy","borough":"Manhattan","sale_price":9907000.0,"interior_sf":2749.0,"bedrooms":2.0,"bathrooms":2.9,"floor_level":13,"year_built":1891,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":1,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1080.0,"school_rating":9.1,"price_per_sf":3604.0},{"address":"398 East 95st St, 4A","neighborhood":"DUMBO","borough":"Brooklyn","sale_price":11094000.0,"interior_sf":3004.0,"bedrooms":2.0,"bathrooms":2.5,"floor_level":16,"year_built":1894,"has_doorman":0,"has_elevator":0,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1639.0,"school_rating":8.4,"price_per_sf":3693.0},{"address":"350  143th St, 21B","neighborhood":"West Village","borough":"Manhattan","sale_price":12692000.0,"interior_sf":2872.0,"bedrooms":2.0,"bathrooms":2.6,"floor_level":40,"year_built":1996,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":2046.0,"school_rating":7.3,"price_per_sf":4419.0},{"address":"414 East 87th St, 11C","neighborhood":"Fort Greene","borough":"Brooklyn","sale_price":10306000.0,"interior_sf":3772.0,"bedrooms":4.0,"bathrooms":3.9,"floor_level":17,"year_built":1938,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":2352.0,"school_rating":8.3,"price_per_sf":2732.0},{"address":"52  186th St, 2C","neighborhood":"Brooklyn Heights","borough":"Brooklyn","sale_price":10674000.0,"interior_sf":3105.0,"bedrooms":3.0,"bathrooms":3.1,"floor_level":11,"year_built":1959,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":916.0,"school_rating":8.1,"price_per_sf":3438.0},{"address":"517  197st St, 10F","neighborhood":"Park Slope","borough":"Brooklyn","sale_price":2610000.0,"interior_sf":1580.0,"bedrooms":1.0,"bathrooms":2.2,"floor_level":25,"year_built":1947,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1040.0,"school_rating":5.4,"price_per_sf":1652.0},{"address":"936  58th St, 20C","neighborhood":"Upper West Side","borough":"Manhattan","sale_price":2357000.0,"interior_sf":807.0,"bedrooms":5.0,"bathrooms":4.5,"floor_level":15,"year_built":1944,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":1,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":2199.0,"school_rating":7.3,"price_per_sf":2921.0},{"address":"18  167th St, 9D","neighborhood":"Long Island City","borough":"Queens","sale_price":5806000.0,"interior_sf":2643.0,"bedrooms":4.0,"bathrooms":3.9,"floor_level":40,"year_built":2015,"has_doorman":1,"has_elevator":0,"has_gym":0,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1763.0,"school_rating":8.6,"price_per_sf":2197.0},{"address":"364 West 198th St, 1D","neighborhood":"Astoria","borough":"Queens","sale_price":8167000.0,"interior_sf":3565.0,"bedrooms":2.0,"bathrooms":2.4,"floor_level":40,"year_built":1902,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":756.0,"school_rating":5.9,"price_per_sf":2291.0},{"address":"15  180st St, 16E","neighborhood":"Park Slope","borough":"Brooklyn","sale_price":10785000.0,"interior_sf":3796.0,"bedrooms":4.0,"bathrooms":4.2,"floor_level":14,"year_built":1993,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":1744.0,"school_rating":7.9,"price_per_sf":2841.0},{"address":"827  172th St, 6D","neighborhood":"Gramercy","borough":"Manhattan","sale_price":5075000.0,"interior_sf":1475.0,"bedrooms":1.0,"bathrooms":1.9,"floor_level":24,"year_built":2009,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":478.0,"school_rating":6.9,"price_per_sf":3441.0},{"address":"818 West 135th St, 1G","neighborhood":"Financial District","borough":"Manhattan","sale_price":3924000.0,"interior_sf":1224.0,"bedrooms":5.0,"bathrooms":5.0,"floor_level":44,"year_built":1978,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1177.0,"school_rating":7.0,"price_per_sf":3206.0},{"address":"614  165th St, 6D","neighborhood":"SoHo","borough":"Manhattan","sale_price":2810000.0,"interior_sf":542.0,"bedrooms":3.0,"bathrooms":3.0,"floor_level":33,"year_built":1942,"has_doorman":1,"has_elevator":0,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":1,"is_loft":0,"has_fireplace":1,"is_condo":1,"subway_dist_ft":835.0,"school_rating":4.5,"price_per_sf":5185.0},{"address":"857 West 164st St, 7E","neighborhood":"Chelsea","borough":"Manhattan","sale_price":3557000.0,"interior_sf":1141.0,"bedrooms":3.0,"bathrooms":3.1,"floor_level":10,"year_built":1911,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":2482.0,"school_rating":8.0,"price_per_sf":3117.0},{"address":"509  167th St, 9B","neighborhood":"Williamsburg","borough":"Brooklyn","sale_price":6931000.0,"interior_sf":2673.0,"bedrooms":1.0,"bathrooms":2.1,"floor_level":26,"year_built":1981,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":1,"has_concierge":1,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":183.0,"school_rating":9.2,"price_per_sf":2593.0},{"address":"422 East 150th St, 19C","neighborhood":"Williamsburg","borough":"Brooklyn","sale_price":5061000.0,"interior_sf":2319.0,"bedrooms":4.0,"bathrooms":4.3,"floor_level":28,"year_built":1952,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":1,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":2156.0,"school_rating":4.8,"price_per_sf":2182.0},{"address":"935 West 24th St, 1G","neighborhood":"Long Island City","borough":"Queens","sale_price":2665000.0,"interior_sf":1769.0,"bedrooms":0.0,"bathrooms":1.1,"floor_level":29,"year_built":1910,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":774.0,"school_rating":6.2,"price_per_sf":1507.0},{"address":"180 East 162st St, 19G","neighborhood":"Upper East Side","borough":"Manhattan","sale_price":9749000.0,"interior_sf":1611.0,"bedrooms":1.0,"bathrooms":2.0,"floor_level":2,"year_built":1938,"has_doorman":0,"has_elevator":0,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":186.0,"school_rating":4.3,"price_per_sf":6052.0},{"address":"54 East 101th St, 17E","neighborhood":"Upper West Side","borough":"Manhattan","sale_price":10539000.0,"interior_sf":3542.0,"bedrooms":1.0,"bathrooms":2.1,"floor_level":14,"year_built":2018,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1684.0,"school_rating":4.2,"price_per_sf":2975.0},{"address":"559 West 22th St, 11B","neighborhood":"Financial District","borough":"Manhattan","sale_price":4392000.0,"interior_sf":2031.0,"bedrooms":3.0,"bathrooms":3.0,"floor_level":38,"year_built":1925,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":1727.0,"school_rating":9.9,"price_per_sf":2162.0},{"address":"554  110th St, 14A","neighborhood":"Chelsea","borough":"Manhattan","sale_price":9636000.0,"interior_sf":3308.0,"bedrooms":1.0,"bathrooms":1.7,"floor_level":11,"year_built":1913,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":441.0,"school_rating":7.0,"price_per_sf":2913.0},{"address":"644 East 25st St, 6F","neighborhood":"Chelsea","borough":"Manhattan","sale_price":16328000.0,"interior_sf":3933.0,"bedrooms":4.0,"bathrooms":4.2,"floor_level":14,"year_built":1981,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":191.0,"school_rating":6.1,"price_per_sf":4152.0},{"address":"915 East 195th St, 5C","neighborhood":"Financial District","borough":"Manhattan","sale_price":4427000.0,"interior_sf":1644.0,"bedrooms":3.0,"bathrooms":3.2,"floor_level":15,"year_built":1916,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":367.0,"school_rating":5.6,"price_per_sf":2693.0},{"address":"929 West 132th St, 6C","neighborhood":"Gramercy","borough":"Manhattan","sale_price":3269000.0,"interior_sf":1179.0,"bedrooms":0.0,"bathrooms":1.3,"floor_level":8,"year_built":2013,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":0,"has_storage":1,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1081.0,"school_rating":9.9,"price_per_sf":2773.0},{"address":"477 East 175th St, 24D","neighborhood":"Brooklyn Heights","borough":"Brooklyn","sale_price":9181000.0,"interior_sf":3824.0,"bedrooms":0.0,"bathrooms":1.0,"floor_level":7,"year_built":2005,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":417.0,"school_rating":5.5,"price_per_sf":2401.0},{"address":"525 West 47st St, 1F","neighborhood":"Midtown East","borough":"Manhattan","sale_price":8736000.0,"interior_sf":2611.0,"bedrooms":1.0,"bathrooms":2.1,"floor_level":16,"year_built":2021,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":1,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":1787.0,"school_rating":8.4,"price_per_sf":3346.0},{"address":"227 East 168th St, 18E","neighborhood":"Fort Greene","borough":"Brooklyn","sale_price":4899000.0,"interior_sf":1499.0,"bedrooms":3.0,"bathrooms":3.8,"floor_level":39,"year_built":2012,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":1,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":1,"subway_dist_ft":286.0,"school_rating":5.7,"price_per_sf":3268.0},{"address":"39 East 112th St, 8F","neighborhood":"Williamsburg","borough":"Brooklyn","sale_price":5001000.0,"interior_sf":2655.0,"bedrooms":4.0,"bathrooms":4.2,"floor_level":1,"year_built":1922,"has_doorman":0,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":1993.0,"school_rating":4.4,"price_per_sf":1884.0},{"address":"928 West 66th St, 8F","neighborhood":"Upper East Side","borough":"Manhattan","sale_price":7116000.0,"interior_sf":2321.0,"bedrooms":1.0,"bathrooms":2.2,"floor_level":13,"year_built":1918,"has_doorman":0,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":1,"has_concierge":1,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":1,"has_fireplace":0,"is_condo":1,"subway_dist_ft":2199.0,"school_rating":8.1,"price_per_sf":3066.0},{"address":"78  155st St, 12E","neighborhood":"Fort Greene","borough":"Brooklyn","sale_price":12659000.0,"interior_sf":3625.0,"bedrooms":4.0,"bathrooms":4.3,"floor_level":3,"year_built":1935,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":1,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":1,"has_fireplace":0,"is_condo":0,"subway_dist_ft":1820.0,"school_rating":4.0,"price_per_sf":3492.0},{"address":"893  56th St, 2E","neighborhood":"Park Slope","borough":"Brooklyn","sale_price":3006000.0,"interior_sf":1433.0,"bedrooms":1.0,"bathrooms":2.2,"floor_level":25,"year_built":1952,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":1,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":2365.0,"school_rating":8.1,"price_per_sf":2098.0},{"address":"146 West 196th St, 12E","neighborhood":"Upper West Side","borough":"Manhattan","sale_price":14206000.0,"interior_sf":4050.0,"bedrooms":4.0,"bathrooms":4.0,"floor_level":12,"year_built":2007,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":1,"has_parking":1,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":0,"has_fireplace":1,"is_condo":0,"subway_dist_ft":2354.0,"school_rating":5.5,"price_per_sf":3508.0},{"address":"217 West 13th St, 9A","neighborhood":"Upper East Side","borough":"Manhattan","sale_price":18168000.0,"interior_sf":3788.0,"bedrooms":4.0,"bathrooms":4.2,"floor_level":35,"year_built":1988,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":1,"is_loft":0,"has_fireplace":0,"is_condo":0,"subway_dist_ft":211.0,"school_rating":8.5,"price_per_sf":4796.0},{"address":"420 West 105st St, 15C","neighborhood":"Williamsburg","borough":"Brooklyn","sale_price":5057000.0,"interior_sf":1160.0,"bedrooms":3.0,"bathrooms":3.4,"floor_level":26,"year_built":1976,"has_doorman":1,"has_elevator":1,"has_gym":1,"has_pool":0,"has_parking":0,"has_concierge":1,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":0,"is_corner_unit":0,"is_renovated":1,"is_new_development":0,"is_loft":1,"has_fireplace":0,"is_condo":1,"subway_dist_ft":920.0,"school_rating":8.6,"price_per_sf":4359.0},{"address":"455 West 61th St, 24G","neighborhood":"Chelsea","borough":"Manhattan","sale_price":3422000.0,"interior_sf":1080.0,"bedrooms":3.0,"bathrooms":3.0,"floor_level":35,"year_built":2007,"has_doorman":1,"has_elevator":1,"has_gym":0,"has_pool":0,"has_parking":0,"has_concierge":0,"has_rooftop_access":0,"has_storage":0,"has_washer_dryer":1,"is_corner_unit":0,"is_renovated":0,"is_new_development":0,"is_loft":1,"has_fireplace":0,"is_condo":1,"subway_dist_ft":1924.0,"school_rating":8.3,"price_per_sf":3169.0}],"model":{"r2":0.8181,"adj_r2":0.7926,"n_comps":180,"n_features":22,"median_price":5246500.0,"coefficients":{"intercept":7.215008,"interior_sf":1.09293,"bedrooms":-0.270097,"bathrooms":0.433678,"floor_level":0.004586,"year_built":-0.000203,"has_doorman":-0.043825,"has_elevator":-0.058676,"has_gym":0.134538,"has_pool":0.134575,"has_parking":-0.101614,"has_concierge":-0.033399,"has_rooftop_access":-0.016776,"has_storage":0.062249,"has_washer_dryer":0.019338,"is_corner_unit":-0.05082,"is_renovated":-0.005648,"is_new_development":0.038314,"is_loft":0.184693,"has_fireplace":0.028452,"is_condo":-0.012448,"subway_dist_ft":-0.042294,"school_rating":-0.000101},"feature_names":["interior_sf","bedrooms","bathrooms","floor_level","year_built","has_doorman","has_elevator","has_gym","has_pool","has_parking","has_concierge","has_rooftop_access","has_storage","has_washer_dryer","is_corner_unit","is_renovated","is_new_development","is_loft","has_fireplace","is_condo","subway_dist_ft","school_rating"],"premiums":[{"feature":"bathrooms","label":"Bathrooms","coeff":0.4337,"pct_premium":54.3,"dollar_premium":2848439.0,"type":"premium"},{"feature":"bedrooms","label":"Bedrooms","coeff":-0.2701,"pct_premium":-23.7,"dollar_premium":-1241820.0,"type":"premium"},{"feature":"is_loft","label":"Is Loft","coeff":0.1847,"pct_premium":20.3,"dollar_premium":1064248.0,"type":"premium"},{"feature":"has_pool","label":"Has Pool","coeff":0.1346,"pct_premium":14.4,"dollar_premium":755759.0,"type":"premium"},{"feature":"has_gym","label":"Has Gym","coeff":0.1345,"pct_premium":14.4,"dollar_premium":755540.0,"type":"premium"},{"feature":"has_parking","label":"Has Parking","coeff":-0.1016,"pct_premium":-9.7,"dollar_premium":-506928.0,"type":"premium"},{"feature":"has_storage","label":"Has Storage","coeff":0.0622,"pct_premium":6.4,"dollar_premium":336968.0,"type":"premium"},{"feature":"has_elevator","label":"Has Elevator","coeff":-0.0587,"pct_premium":-5.7,"dollar_premium":-298984.0,"type":"premium"},{"feature":"is_corner_unit","label":"Is Corner Unit","coeff":-0.0508,"pct_premium":-5.0,"dollar_premium":-259965.0,"type":"premium"},{"feature":"has_doorman","label":"Has Doorman","coeff":-0.0438,"pct_premium":-4.3,"dollar_premium":-224962.0,"type":"premium"},{"feature":"is_new_development","label":"Is New Development","coeff":0.0383,"pct_premium":3.9,"dollar_premium":204917.0,"type":"premium"},{"feature":"has_concierge","label":"Has Concierge","coeff":-0.0334,"pct_premium":-3.3,"dollar_premium":-172333.0,"type":"premium"},{"feature":"has_fireplace","label":"Has Fireplace","coeff":0.0285,"pct_premium":2.9,"dollar_premium":151415.0,"type":"premium"},{"feature":"has_washer_dryer","label":"Has Washer Dryer","coeff":0.0193,"pct_premium":2.0,"dollar_premium":102443.0,"type":"premium"},{"feature":"has_rooftop_access","label":"Has Rooftop Access","coeff":-0.0168,"pct_premium":-1.7,"dollar_premium":-87279.0,"type":"premium"},{"feature":"is_condo","label":"Is Condo","coeff":-0.0124,"pct_premium":-1.2,"dollar_premium":-64903.0,"type":"premium"},{"feature":"is_renovated","label":"Is Renovated","coeff":-0.0056,"pct_premium":-0.6,"dollar_premium":-29549.0,"type":"premium"},{"feature":"floor_level","label":"Floor Level","coeff":0.0046,"pct_premium":0.5,"dollar_premium":24114.0,"type":"premium"},{"feature":"year_built","label":"Year Built","coeff":-0.0002,"pct_premium":-0.0,"dollar_premium":-1064.0,"type":"premium"},{"feature":"school_rating","label":"School Rating","coeff":-0.0001,"pct_premium":-0.0,"dollar_premium":-529.0,"type":"premium"}],"predictions":[{"address":"101 West 23rd St, 4A","borough":"Manhattan","neighborhood":"Chelsea","actual":1850000.0,"predicted":2143202.0,"residual_pct":-15.8},{"address":"245 East 54th St, 12B","borough":"Manhattan","neighborhood":"Midtown East","actual":2750000.0,"predicted":2190230.0,"residual_pct":20.4},{"address":"88 Leroy St, 3C","borough":"Manhattan","neighborhood":"West Village","actual":4200000.0,"predicted":3705168.0,"residual_pct":11.8},{"address":"310 Gold St, 28F","borough":"Brooklyn","neighborhood":"Downtown Brooklyn","actual":1100000.0,"predicted":1524863.0,"residual_pct":-38.6},{"address":"189 Columbia St, 2A","borough":"Brooklyn","neighborhood":"Columbia Street Waterfront","actual":875000.0,"predicted":1052465.0,"residual_pct":-20.3},{"address":"420 Kent Ave, PH1","borough":"Brooklyn","neighborhood":"Williamsburg","actual":3800000.0,"predicted":4475350.0,"residual_pct":-17.8},{"address":"55 Water St, 5E","borough":"Brooklyn","neighborhood":"DUMBO","actual":1650000.0,"predicted":2034975.0,"residual_pct":-23.3},{"address":"720 Fort Washington Ave, 6D","borough":"Manhattan","neighborhood":"Washington Heights","actual":650000.0,"predicted":999334.0,"residual_pct":-53.7},{"address":"300 East 64th St, 8G","borough":"Manhattan","neighborhood":"Upper East Side","actual":2100000.0,"predicted":2610633.0,"residual_pct":-24.3},{"address":"40 Mercer St, 3A","borough":"Manhattan","neighborhood":"SoHo","actual":6500000.0,"predicted":7590275.0,"residual_pct":-16.8},{"address":"175 West 73rd St, 10C","borough":"Manhattan","neighborhood":"Upper West Side","actual":1750000.0,"predicted":2183321.0,"residual_pct":-24.8},{"address":"55 Berry St, 4B","borough":"Brooklyn","neighborhood":"Williamsburg","actual":1250000.0,"predicted":1871668.0,"residual_pct":-49.7},{"address":"1 Main St, 8D","borough":"Brooklyn","neighborhood":"DUMBO","actual":2200000.0,"predicted":2303676.0,"residual_pct":-4.7},{"address":"385 First Ave, 14A","borough":"Manhattan","neighborhood":"Gramercy","actual":1450000.0,"predicted":1328121.0,"residual_pct":8.4},{"address":"200 Riverside Dr, 6F","borough":"Manhattan","neighborhood":"Upper West Side","actual":2400000.0,"predicted":3160353.0,"residual_pct":-31.7},{"address":"210 Lafayette St, PH","borough":"Manhattan","neighborhood":"NoLita","actual":7200000.0,"predicted":8803458.0,"residual_pct":-22.3},{"address":"90 Furman St, 11H","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":1950000.0,"predicted":2564541.0,"residual_pct":-31.5},{"address":"250 West 22nd St, 2A","borough":"Manhattan","neighborhood":"Chelsea","actual":3100000.0,"predicted":2664663.0,"residual_pct":14.0},{"address":"700 Park Ave, 15C","borough":"Manhattan","neighborhood":"Upper East Side","actual":4800000.0,"predicted":4450085.0,"residual_pct":7.3},{"address":"555 West 23rd St, 6D","borough":"Manhattan","neighborhood":"Chelsea","actual":1600000.0,"predicted":2608548.0,"residual_pct":-63.0},{"address":"111 Hicks St, 5B","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":1050000.0,"predicted":1602769.0,"residual_pct":-52.6},{"address":"75 Wall St, 32A","borough":"Manhattan","neighborhood":"Financial District","actual":1350000.0,"predicted":1773866.0,"residual_pct":-31.4},{"address":"110 Charlton St, 4C","borough":"Manhattan","neighborhood":"Hudson Square","actual":2600000.0,"predicted":2269520.0,"residual_pct":12.7},{"address":"360 Furman St, 8E","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":1750000.0,"predicted":2318092.0,"residual_pct":-32.5},{"address":"480 Park Ave, 12A","borough":"Manhattan","neighborhood":"Midtown East","actual":8500000.0,"predicted":8135605.0,"residual_pct":4.3},{"address":"100 Jay St, 6G","borough":"Brooklyn","neighborhood":"DUMBO","actual":1500000.0,"predicted":2229960.0,"residual_pct":-48.7},{"address":"428 West 23rd St, 3B","borough":"Manhattan","neighborhood":"Chelsea","actual":2250000.0,"predicted":2367530.0,"residual_pct":-5.2},{"address":"33 East 74th St, 7D","borough":"Manhattan","neighborhood":"Upper East Side","actual":5200000.0,"predicted":6760239.0,"residual_pct":-30.0},{"address":"150 Myrtle Ave, 18C","borough":"Brooklyn","neighborhood":"Fort Greene","actual":800000.0,"predicted":1290225.0,"residual_pct":-61.3},{"address":"305 West End Ave, 9A","borough":"Manhattan","neighborhood":"Upper West Side","actual":3200000.0,"predicted":3804128.0,"residual_pct":-18.9},{"address":"367  153st St, 5D","borough":"Brooklyn","neighborhood":"Park Slope","actual":3947000.0,"predicted":3725329.0,"residual_pct":5.6},{"address":"883  152th St, 4B","borough":"Manhattan","neighborhood":"Midtown East","actual":9186000.0,"predicted":7212606.0,"residual_pct":21.5},{"address":"219 West 35th St, 8D","borough":"Brooklyn","neighborhood":"Downtown Brooklyn","actual":1506000.0,"predicted":1954881.0,"residual_pct":-29.8},{"address":"398 East 49th St, 4G","borough":"Brooklyn","neighborhood":"Williamsburg","actual":7789000.0,"predicted":13167844.0,"residual_pct":-69.1},{"address":"598 West 162st St, 20G","borough":"Manhattan","neighborhood":"West Village","actual":13996000.0,"predicted":7746144.0,"residual_pct":44.7},{"address":"159 East 196th St, 20B","borough":"Queens","neighborhood":"Long Island City","actual":1421000.0,"predicted":1810747.0,"residual_pct":-27.4},{"address":"892 East 98th St, 14F","borough":"Brooklyn","neighborhood":"Park Slope","actual":2649000.0,"predicted":5660153.0,"residual_pct":-113.7},{"address":"121 East 163th St, 14B","borough":"Brooklyn","neighborhood":"Park Slope","actual":5719000.0,"predicted":8506815.0,"residual_pct":-48.7},{"address":"57 East 140st St, 14G","borough":"Manhattan","neighborhood":"Chelsea","actual":5064000.0,"predicted":4930139.0,"residual_pct":2.6},{"address":"602 East 12th St, 14B","borough":"Manhattan","neighborhood":"Midtown East","actual":2656000.0,"predicted":2888800.0,"residual_pct":-8.8},{"address":"724 West 181th St, 8D","borough":"Manhattan","neighborhood":"Upper West Side","actual":11536000.0,"predicted":12907525.0,"residual_pct":-11.9},{"address":"145 West 184th St, 7D","borough":"Queens","neighborhood":"Astoria","actual":3381000.0,"predicted":8105488.0,"residual_pct":-139.7},{"address":"980 East 9st St, 9C","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":1644000.0,"predicted":1750444.0,"residual_pct":-6.5},{"address":"276 West 101th St, 10C","borough":"Brooklyn","neighborhood":"Fort Greene","actual":5293000.0,"predicted":4850019.0,"residual_pct":8.4},{"address":"413 East 46th St, 11G","borough":"Manhattan","neighborhood":"Midtown East","actual":5591000.0,"predicted":4271192.0,"residual_pct":23.6},{"address":"505 East 196th St, 15B","borough":"Manhattan","neighborhood":"Gramercy","actual":9907000.0,"predicted":10011782.0,"residual_pct":-1.1},{"address":"398 East 95st St, 4A","borough":"Brooklyn","neighborhood":"DUMBO","actual":11094000.0,"predicted":8448896.0,"residual_pct":23.8},{"address":"350  143th St, 21B","borough":"Manhattan","neighborhood":"West Village","actual":12692000.0,"predicted":9269501.0,"residual_pct":27.0},{"address":"414 East 87th St, 11C","borough":"Brooklyn","neighborhood":"Fort Greene","actual":10306000.0,"predicted":9464563.0,"residual_pct":8.2},{"address":"52  186th St, 2C","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":10674000.0,"predicted":9097802.0,"residual_pct":14.8},{"address":"517  197st St, 10F","borough":"Brooklyn","neighborhood":"Park Slope","actual":2610000.0,"predicted":4485875.0,"residual_pct":-71.9},{"address":"936  58th St, 20C","borough":"Manhattan","neighborhood":"Upper West Side","actual":2357000.0,"predicted":2400593.0,"residual_pct":-1.8},{"address":"18  167th St, 9D","borough":"Queens","neighborhood":"Long Island City","actual":5806000.0,"predicted":7432570.0,"residual_pct":-28.0},{"address":"364 West 198th St, 1D","borough":"Queens","neighborhood":"Astoria","actual":8167000.0,"predicted":10492141.0,"residual_pct":-28.5},{"address":"15  180st St, 16E","borough":"Brooklyn","neighborhood":"Park Slope","actual":10785000.0,"predicted":11484768.0,"residual_pct":-6.5},{"address":"827  172th St, 6D","borough":"Manhattan","neighborhood":"Gramercy","actual":5075000.0,"predicted":3778511.0,"residual_pct":25.5},{"address":"818 West 135th St, 1G","borough":"Manhattan","neighborhood":"Financial District","actual":3924000.0,"predicted":3960244.0,"residual_pct":-0.9},{"address":"614  165th St, 6D","borough":"Manhattan","neighborhood":"SoHo","actual":2810000.0,"predicted":1284354.0,"residual_pct":54.3},{"address":"857 West 164st St, 7E","borough":"Manhattan","neighborhood":"Chelsea","actual":3557000.0,"predicted":2330138.0,"residual_pct":34.5},{"address":"509  167th St, 9B","borough":"Brooklyn","neighborhood":"Williamsburg","actual":6931000.0,"predicted":7754887.0,"residual_pct":-11.9},{"address":"422 East 150th St, 19C","borough":"Brooklyn","neighborhood":"Williamsburg","actual":5061000.0,"predicted":6994552.0,"residual_pct":-38.2},{"address":"935 West 24th St, 1G","borough":"Queens","neighborhood":"Long Island City","actual":2665000.0,"predicted":4075621.0,"residual_pct":-52.9},{"address":"180 East 162st St, 19G","borough":"Manhattan","neighborhood":"Upper East Side","actual":9749000.0,"predicted":5032958.0,"residual_pct":48.4},{"address":"54 East 101th St, 17E","borough":"Manhattan","neighborhood":"Upper West Side","actual":10539000.0,"predicted":10888040.0,"residual_pct":-3.3},{"address":"559 West 22th St, 11B","borough":"Manhattan","neighborhood":"Financial District","actual":4392000.0,"predicted":5525266.0,"residual_pct":-25.8},{"address":"554  110th St, 14A","borough":"Manhattan","neighborhood":"Chelsea","actual":9636000.0,"predicted":7727426.0,"residual_pct":19.8},{"address":"644 East 25st St, 6F","borough":"Manhattan","neighborhood":"Chelsea","actual":16328000.0,"predicted":11720035.0,"residual_pct":28.2},{"address":"915 East 195th St, 5C","borough":"Manhattan","neighborhood":"Financial District","actual":4427000.0,"predicted":4908239.0,"residual_pct":-10.9},{"address":"929 West 132th St, 6C","borough":"Manhattan","neighborhood":"Gramercy","actual":3269000.0,"predicted":2723231.0,"residual_pct":16.7},{"address":"477 East 175th St, 24D","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":9181000.0,"predicted":8411363.0,"residual_pct":8.4},{"address":"525 West 47st St, 1F","borough":"Manhattan","neighborhood":"Midtown East","actual":8736000.0,"predicted":8168875.0,"residual_pct":6.5},{"address":"227 East 168th St, 18E","borough":"Brooklyn","neighborhood":"Fort Greene","actual":4899000.0,"predicted":5578335.0,"residual_pct":-13.9},{"address":"39 East 112th St, 8F","borough":"Brooklyn","neighborhood":"Williamsburg","actual":5001000.0,"predicted":7486907.0,"residual_pct":-49.7},{"address":"928 West 66th St, 8F","borough":"Manhattan","neighborhood":"Upper East Side","actual":7116000.0,"predicted":7614293.0,"residual_pct":-7.0},{"address":"78  155st St, 12E","borough":"Brooklyn","neighborhood":"Fort Greene","actual":12659000.0,"predicted":11743695.0,"residual_pct":7.2},{"address":"893  56th St, 2E","borough":"Brooklyn","neighborhood":"Park Slope","actual":3006000.0,"predicted":4123924.0,"residual_pct":-37.2},{"address":"146 West 196th St, 12E","borough":"Manhattan","neighborhood":"Upper West Side","actual":14206000.0,"predicted":11351668.0,"residual_pct":20.1},{"address":"217 West 13th St, 9A","borough":"Manhattan","neighborhood":"Upper East Side","actual":18168000.0,"predicted":13886862.0,"residual_pct":23.6},{"address":"420 West 105st St, 15C","borough":"Brooklyn","neighborhood":"Williamsburg","actual":5057000.0,"predicted":3934034.0,"residual_pct":22.2},{"address":"455 West 61th St, 24G","borough":"Manhattan","neighborhood":"Chelsea","actual":3422000.0,"predicted":2845528.0,"residual_pct":16.8},{"address":"485  100th St, 4G","borough":"Manhattan","neighborhood":"Gramercy","actual":8700000.0,"predicted":7897474.0,"residual_pct":9.2},{"address":"415 East 130th St, 8F","borough":"Manhattan","neighborhood":"SoHo","actual":3005000.0,"predicted":1433852.0,"residual_pct":52.3},{"address":"501 East 60st St, 18B","borough":"Brooklyn","neighborhood":"Park Slope","actual":3383000.0,"predicted":4931084.0,"residual_pct":-45.8},{"address":"124  67th St, 16F","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":7534000.0,"predicted":4879199.0,"residual_pct":35.2},{"address":"837 East 141th St, 21G","borough":"Brooklyn","neighborhood":"Williamsburg","actual":8458000.0,"predicted":10523136.0,"residual_pct":-24.4},{"address":"47  35th St, 22A","borough":"Brooklyn","neighborhood":"Park Slope","actual":14215000.0,"predicted":12875725.0,"residual_pct":9.4},{"address":"247 West 121st St, 1A","borough":"Manhattan","neighborhood":"Midtown East","actual":2912000.0,"predicted":2414763.0,"residual_pct":17.1},{"address":"504  106th St, 11E","borough":"Brooklyn","neighborhood":"DUMBO","actual":13582000.0,"predicted":15515387.0,"residual_pct":-14.2},{"address":"551 East 118th St, 1B","borough":"Manhattan","neighborhood":"Chelsea","actual":1789000.0,"predicted":1622038.0,"residual_pct":9.3},{"address":"673 East 11th St, 3G","borough":"Manhattan","neighborhood":"West Village","actual":18773000.0,"predicted":10852792.0,"residual_pct":42.2},{"address":"329 West 146st St, 13D","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":9194000.0,"predicted":10110078.0,"residual_pct":-10.0},{"address":"894 West 114th St, 18E","borough":"Manhattan","neighborhood":"Financial District","actual":15302000.0,"predicted":11101658.0,"residual_pct":27.4},{"address":"208  148th St, 3B","borough":"Brooklyn","neighborhood":"DUMBO","actual":4292000.0,"predicted":3613068.0,"residual_pct":15.8},{"address":"674 West 176th St, 3G","borough":"Brooklyn","neighborhood":"Park Slope","actual":11710000.0,"predicted":13896553.0,"residual_pct":-18.7},{"address":"671 East 54st St, 9F","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":2213000.0,"predicted":3239827.0,"residual_pct":-46.4},{"address":"752 West 109th St, 24B","borough":"Brooklyn","neighborhood":"DUMBO","actual":4997000.0,"predicted":6593665.0,"residual_pct":-32.0},{"address":"693 West 166th St, 5C","borough":"Brooklyn","neighborhood":"DUMBO","actual":5321000.0,"predicted":6236663.0,"residual_pct":-17.2},{"address":"459 East 34th St, 16A","borough":"Manhattan","neighborhood":"Upper East Side","actual":3548000.0,"predicted":3056870.0,"residual_pct":13.8},{"address":"982 West 67st St, 23B","borough":"Manhattan","neighborhood":"SoHo","actual":2520000.0,"predicted":1913559.0,"residual_pct":24.1},{"address":"73  15th St, 22D","borough":"Manhattan","neighborhood":"Midtown East","actual":7579000.0,"predicted":10075762.0,"residual_pct":-32.9},{"address":"868 West 29th St, 24F","borough":"Manhattan","neighborhood":"Gramercy","actual":5042000.0,"predicted":3938586.0,"residual_pct":21.9},{"address":"910 West 81th St, 14D","borough":"Manhattan","neighborhood":"Midtown East","actual":6373000.0,"predicted":9666546.0,"residual_pct":-51.7},{"address":"243 East 122st St, 1C","borough":"Brooklyn","neighborhood":"Downtown Brooklyn","actual":5465000.0,"predicted":4966238.0,"residual_pct":9.1},{"address":"293 West 25th St, 12A","borough":"Manhattan","neighborhood":"Gramercy","actual":7139000.0,"predicted":7066805.0,"residual_pct":1.0},{"address":"345 East 174th St, 3D","borough":"Manhattan","neighborhood":"West Village","actual":13505000.0,"predicted":10068098.0,"residual_pct":25.4},{"address":"103 East 96th St, 20D","borough":"Manhattan","neighborhood":"Upper East Side","actual":2826000.0,"predicted":2286035.0,"residual_pct":19.1},{"address":"934 West 11st St, 1C","borough":"Manhattan","neighborhood":"Upper East Side","actual":11594000.0,"predicted":9483686.0,"residual_pct":18.2},{"address":"193 West 47th St, 24F","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":12271000.0,"predicted":10266583.0,"residual_pct":16.3},{"address":"19  41th St, 10C","borough":"Brooklyn","neighborhood":"DUMBO","actual":3751000.0,"predicted":4219767.0,"residual_pct":-12.5},{"address":"405  142th St, 15E","borough":"Brooklyn","neighborhood":"Park Slope","actual":2786000.0,"predicted":4420964.0,"residual_pct":-58.7},{"address":"727 West 79st St, 3E","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":2137000.0,"predicted":2528483.0,"residual_pct":-18.3},{"address":"437 East 113th St, 7A","borough":"Manhattan","neighborhood":"Midtown East","actual":18470000.0,"predicted":13217141.0,"residual_pct":28.4},{"address":"971 West 22th St, 8G","borough":"Brooklyn","neighborhood":"Fort Greene","actual":10390000.0,"predicted":14478023.0,"residual_pct":-39.3},{"address":"261  92th St, 21E","borough":"Manhattan","neighborhood":"Chelsea","actual":4407000.0,"predicted":4360970.0,"residual_pct":1.0},{"address":"44 East 83st St, 5D","borough":"Manhattan","neighborhood":"SoHo","actual":3614000.0,"predicted":1442252.0,"residual_pct":60.1},{"address":"103  164th St, 3D","borough":"Manhattan","neighborhood":"West Village","actual":3806000.0,"predicted":2024828.0,"residual_pct":46.8},{"address":"654 West 78th St, 7A","borough":"Brooklyn","neighborhood":"Williamsburg","actual":1124000.0,"predicted":1258347.0,"residual_pct":-12.0},{"address":"803 East 150th St, 15G","borough":"Manhattan","neighborhood":"Financial District","actual":10643000.0,"predicted":11577914.0,"residual_pct":-8.8},{"address":"996 East 71st St, 11F","borough":"Manhattan","neighborhood":"Chelsea","actual":9527000.0,"predicted":11357136.0,"residual_pct":-19.2},{"address":"426 East 39th St, 24E","borough":"Manhattan","neighborhood":"Washington Heights","actual":1484000.0,"predicted":2824601.0,"residual_pct":-90.3},{"address":"330 East 80th St, 4G","borough":"Manhattan","neighborhood":"Chelsea","actual":13622000.0,"predicted":9363141.0,"residual_pct":31.3},{"address":"884  74th St, 7A","borough":"Brooklyn","neighborhood":"Williamsburg","actual":2477000.0,"predicted":4287111.0,"residual_pct":-73.1},{"address":"731 West 178st St, 21A","borough":"Manhattan","neighborhood":"Midtown East","actual":7496000.0,"predicted":4794379.0,"residual_pct":36.0},{"address":"916 West 98th St, 12G","borough":"Manhattan","neighborhood":"Upper West Side","actual":7827000.0,"predicted":9083493.0,"residual_pct":-16.1},{"address":"656  119th St, 20F","borough":"Manhattan","neighborhood":"Upper East Side","actual":10217000.0,"predicted":8809071.0,"residual_pct":13.8},{"address":"858 East 76th St, 24F","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":19979000.0,"predicted":13439924.0,"residual_pct":32.7},{"address":"916 East 185st St, 18F","borough":"Manhattan","neighborhood":"Upper West Side","actual":1792000.0,"predicted":1520710.0,"residual_pct":15.1},{"address":"178 East 146th St, 19G","borough":"Manhattan","neighborhood":"West Village","actual":5835000.0,"predicted":3777530.0,"residual_pct":35.3},{"address":"327 West 193th St, 24B","borough":"Manhattan","neighborhood":"Chelsea","actual":5745000.0,"predicted":4328079.0,"residual_pct":24.7},{"address":"378  40th St, 19A","borough":"Queens","neighborhood":"Long Island City","actual":2807000.0,"predicted":3926546.0,"residual_pct":-39.9},{"address":"178  121st St, 14F","borough":"Queens","neighborhood":"Astoria","actual":7551000.0,"predicted":10544712.0,"residual_pct":-39.6},{"address":"307 East 122th St, 18C","borough":"Brooklyn","neighborhood":"Williamsburg","actual":7741000.0,"predicted":7059038.0,"residual_pct":8.8},{"address":"633 East 108th St, 21C","borough":"Manhattan","neighborhood":"Upper East Side","actual":5879000.0,"predicted":4612721.0,"residual_pct":21.5},{"address":"667  152th St, 24E","borough":"Queens","neighborhood":"Long Island City","actual":10777000.0,"predicted":10415946.0,"residual_pct":3.4},{"address":"282  129st St, 6C","borough":"Brooklyn","neighborhood":"Park Slope","actual":5300000.0,"predicted":7433441.0,"residual_pct":-40.3},{"address":"262  19th St, 18D","borough":"Brooklyn","neighborhood":"Williamsburg","actual":3922000.0,"predicted":7803708.0,"residual_pct":-99.0},{"address":"74 East 150th St, 18D","borough":"Manhattan","neighborhood":"Midtown East","actual":5914000.0,"predicted":6596860.0,"residual_pct":-11.5},{"address":"335 West 3th St, 9E","borough":"Manhattan","neighborhood":"Upper East Side","actual":2759000.0,"predicted":2887576.0,"residual_pct":-4.7},{"address":"38  117st St, 8G","borough":"Manhattan","neighborhood":"West Village","actual":18014000.0,"predicted":16563108.0,"residual_pct":8.1},{"address":"184  57th St, 10C","borough":"Queens","neighborhood":"Astoria","actual":528000.0,"predicted":857386.0,"residual_pct":-62.4},{"address":"993 West 194th St, 9B","borough":"Manhattan","neighborhood":"Midtown East","actual":3822000.0,"predicted":2197298.0,"residual_pct":42.5},{"address":"637  69th St, 4C","borough":"Manhattan","neighborhood":"Gramercy","actual":5956000.0,"predicted":4447683.0,"residual_pct":25.3},{"address":"540 West 16st St, 23A","borough":"Manhattan","neighborhood":"Upper East Side","actual":9100000.0,"predicted":4950988.0,"residual_pct":45.6},{"address":"407  66th St, 12A","borough":"Brooklyn","neighborhood":"DUMBO","actual":2254000.0,"predicted":1602783.0,"residual_pct":28.9},{"address":"793 East 170th St, 21C","borough":"Manhattan","neighborhood":"Chelsea","actual":1343000.0,"predicted":1163034.0,"residual_pct":13.4},{"address":"42 East 29th St, 13B","borough":"Brooklyn","neighborhood":"Downtown Brooklyn","actual":6938000.0,"predicted":8539295.0,"residual_pct":-23.1},{"address":"921 East 51st St, 23F","borough":"Brooklyn","neighborhood":"Park Slope","actual":9277000.0,"predicted":9943249.0,"residual_pct":-7.2},{"address":"437 West 69th St, 15F","borough":"Brooklyn","neighborhood":"Williamsburg","actual":2098000.0,"predicted":1971983.0,"residual_pct":6.0},{"address":"262  57th St, 6D","borough":"Manhattan","neighborhood":"Midtown East","actual":4573000.0,"predicted":5722775.0,"residual_pct":-25.1},{"address":"161 East 72th St, 7F","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":9088000.0,"predicted":11005226.0,"residual_pct":-21.1},{"address":"332  144st St, 16B","borough":"Brooklyn","neighborhood":"DUMBO","actual":11897000.0,"predicted":11471950.0,"residual_pct":3.6},{"address":"828 West 56th St, 21C","borough":"Brooklyn","neighborhood":"Brooklyn Heights","actual":6128000.0,"predicted":8248875.0,"residual_pct":-34.6},{"address":"696 West 123th St, 21E","borough":"Manhattan","neighborhood":"West Village","actual":19988000.0,"predicted":8696568.0,"residual_pct":56.5},{"address":"582  60th St, 10A","borough":"Manhattan","neighborhood":"Midtown East","actual":8838000.0,"predicted":8572969.0,"residual_pct":3.0},{"address":"697  150st St, 18A","borough":"Manhattan","neighborhood":"SoHo","actual":11420000.0,"predicted":5268368.0,"residual_pct":53.9},{"address":"665  41th St, 12G","borough":"Manhattan","neighborhood":"Financial District","actual":3593000.0,"predicted":3801438.0,"residual_pct":-5.8},{"address":"414  106th St, 16E","borough":"Manhattan","neighborhood":"Upper West Side","actual":13108000.0,"predicted":7935829.0,"residual_pct":39.5},{"address":"650  180th St, 8G","borough":"Manhattan","neighborhood":"Chelsea","actual":9836000.0,"predicted":7888231.0,"residual_pct":19.8},{"address":"627 East 66st St, 11E","borough":"Manhattan","neighborhood":"West Village","actual":2612000.0,"predicted":1902383.0,"residual_pct":27.2},{"address":"364 West 163th St, 10E","borough":"Brooklyn","neighborhood":"DUMBO","actual":10700000.0,"predicted":6793801.0,"residual_pct":36.5},{"address":"32 West 169th St, 4F","borough":"Manhattan","neighborhood":"Chelsea","actual":2652000.0,"predicted":1757982.0,"residual_pct":33.7},{"address":"899 East 177th St, 11G","borough":"Queens","neighborhood":"Astoria","actual":4584000.0,"predicted":7668438.0,"residual_pct":-67.3},{"address":"237 East 78st St, 19A","borough":"Brooklyn","neighborhood":"DUMBO","actual":11769000.0,"predicted":9843173.0,"residual_pct":16.4},{"address":"827 West 63th St, 15B","borough":"Manhattan","neighborhood":"Upper West Side","actual":2931000.0,"predicted":2812429.0,"residual_pct":4.0},{"address":"490  164th St, 1E","borough":"Brooklyn","neighborhood":"DUMBO","actual":6204000.0,"predicted":7447312.0,"residual_pct":-20.0},{"address":"597 West 130th St, 13E","borough":"Manhattan","neighborhood":"SoHo","actual":3203000.0,"predicted":2656951.0,"residual_pct":17.0},{"address":"297 West 147st St, 18B","borough":"Queens","neighborhood":"Long Island City","actual":6895000.0,"predicted":8043993.0,"residual_pct":-16.7},{"address":"216 East 165th St, 5B","borough":"Manhattan","neighborhood":"Financial District","actual":9348000.0,"predicted":8737604.0,"residual_pct":6.5},{"address":"807  180th St, 19G","borough":"Brooklyn","neighborhood":"Park Slope","actual":1735000.0,"predicted":2572295.0,"residual_pct":-48.3},{"address":"189 West 48th St, 2F","borough":"Manhattan","neighborhood":"West Village","actual":9401000.0,"predicted":5254184.0,"residual_pct":44.1},{"address":"661 West 40st St, 5C","borough":"Manhattan","neighborhood":"Financial District","actual":16280000.0,"predicted":13618638.0,"residual_pct":16.3},{"address":"455 West 186th St, 6D","borough":"Manhattan","neighborhood":"Financial District","actual":3838000.0,"predicted":4265406.0,"residual_pct":-11.1},{"address":"438 East 165th St, 24A","borough":"Queens","neighborhood":"Astoria","actual":1383000.0,"predicted":2956227.0,"residual_pct":-113.8},{"address":"463 West 87th St, 15C","borough":"Brooklyn","neighborhood":"DUMBO","actual":8411000.0,"predicted":7725919.0,"residual_pct":8.1},{"address":"309 West 60st St, 8C","borough":"Manhattan","neighborhood":"Financial District","actual":6408000.0,"predicted":7564142.0,"residual_pct":-18.0},{"address":"687 West 9th St, 13E","borough":"Manhattan","neighborhood":"Upper East Side","actual":8599000.0,"predicted":7414887.0,"residual_pct":13.8},{"address":"259 West 125th St, 10F","borough":"Manhattan","neighborhood":"Upper West Side","actual":6866000.0,"predicted":5449577.0,"residual_pct":20.6},{"address":"147 West 110th St, 10F","borough":"Manhattan","neighborhood":"Washington Heights","actual":7043000.0,"predicted":9787963.0,"residual_pct":-39.0},{"address":"506 East 32st St, 4F","borough":"Manhattan","neighborhood":"Midtown East","actual":7000000.0,"predicted":6363855.0,"residual_pct":9.1},{"address":"227 East 163th St, 22B","borough":"Manhattan","neighborhood":"SoHo","actual":8216000.0,"predicted":4329627.0,"residual_pct":47.3}],"log_transformed":["interior_sf","subway_dist_ft"]}};
+
+// ═══════════════════════════════════════════════════════════════════
+// DASHBOARD CLASS — reads from RAW, renders everything
+// ═══════════════════════════════════════════════════════════════════
+class Dashboard {
+  constructor(data) {
+    this.data = data;
+    this.project = "lafayette";
+    this.tab = "overview";
+    this.boroughFilter = "All";
+    this.charts = {};
+    this.sortCol = null;
+    this.sortDir = "desc";
+
+    // Hedonic scenario state
+    this.scenario = {
+      interior_sf:1100, bedrooms:2, bathrooms:2, floor_level:3,
+      has_doorman:0, has_elevator:1, has_gym:0, has_pool:0,
+      has_parking:0, has_concierge:0, has_rooftop_access:0, has_storage:0,
+      has_washer_dryer:0, is_corner_unit:0, is_renovated:0,
+      is_new_development:1, is_loft:0, has_fireplace:0, is_condo:1,
+      subway_dist_ft:500, school_rating:7, year_built:2026,
+    };
+    this.scenario2 = {
+      interior_sf:1400, bedrooms:3, bathrooms:2.5, floor_level:8,
+      has_doorman:1, has_elevator:1, has_gym:1, has_pool:0,
+      has_parking:0, has_concierge:0, has_rooftop_access:0, has_storage:1,
+      has_washer_dryer:1, is_corner_unit:0, is_renovated:0,
+      is_new_development:1, is_loft:0, has_fireplace:0, is_condo:1,
+      subway_dist_ft:400, school_rating:8, year_built:2026,
+    };
+    this.showCompare = false;
+
+    this.init();
+  }
+
+  init() {
+    // Meta info
+    const m = this.data.meta;
+    document.getElementById("metaInfo").textContent =
+      `Run #${m.run_number} · ${m.generated} · ${m.connectors} connectors`;
+
+    // Tabs
+    const tabs = [
+      ["overview","Overview"],["comps","Comps Explorer"],
+      ["model","Hedonic Model"],["market","Market Data"],
+      ["construction","Construction & Quality"]
+    ];
+    const bar = document.getElementById("tabBar");
+    tabs.forEach(([id,label]) => {
+      const btn = document.createElement("button");
+      btn.className = "tab" + (id === this.tab ? " active" : "");
+      btn.textContent = label;
+      btn.onclick = () => this.setTab(id);
+      bar.appendChild(btn);
+    });
+
+    this.render();
+  }
+
+  setTab(t) {
+    this.tab = t;
+    document.querySelectorAll(".tab").forEach((el,i) => {
+      el.classList.toggle("active", el.textContent === {
+        overview:"Overview",comps:"Comps Explorer",model:"Hedonic Model",
+        market:"Market Data",construction:"Construction & Quality"
+      }[t]);
+    });
+    // Destroy old charts
+    Object.values(this.charts).forEach(c => c.destroy());
+    this.charts = {};
+    this.render();
+  }
+
+  setProject(p) { this.project = p; this.render(); }
+  setBorough(b) { this.boroughFilter = b; this.render(); }
+
+  getComps() {
+    const c = this.data.comps || [];
+    if (this.boroughFilter === "All") return c;
+    return c.filter(r => r.borough === this.boroughFilter);
+  }
+
+  // ── HEDONIC PREDICTION (uses REAL trained coefficients) ──
+  predict(params) {
+    const m = this.data.model;
+    if (!m || !m.coefficients) return null;
+    const c = m.coefficients;
+    let logP = c.intercept || 0;
+    for (const f of m.feature_names) {
+      let val = params[f] || 0;
+      // Apply log transform to same features the model used
+      if (m.log_transformed && m.log_transformed.includes(f) && val > 0) {
+        val = Math.log(val);
+      }
+      logP += (c[f] || 0) * val;
+    }
+    return Math.exp(logP);
+  }
+
+  // ── FORMAT HELPERS ──
+  fmt(n) { return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n); }
+  fmtK(n) { return n>=1e6?`$${(n/1e6).toFixed(1)}M`:n>=1e3?`$${(n/1e3).toFixed(0)}K`:this.fmt(n); }
+  fmtN(n) { return new Intl.NumberFormat("en-US").format(Math.round(n)); }
+
+  boroughColor(b) {
+    return {"Manhattan":"#3b82f6","Brooklyn":"#10b981","Queens":"#8b5cf6",
+            "Bronx":"#f59e0b","Staten Island":"#64748b"}[b] || "#64748b";
+  }
+
+  // ── RENDER ROUTER ──
+  render() {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    const sec = document.getElementById("sec-" + this.tab);
+    if (sec) { sec.classList.add("active"); }
+
+    const fn = {
+      overview: () => this.renderOverview(),
+      comps: () => this.renderComps(),
+      model: () => this.renderModel(),
+      market: () => this.renderMarket(),
+      construction: () => this.renderConstruction(),
+    }[this.tab];
+    if (fn) fn();
+  }
+
+  // ══════════════════════════════════════════
+  // OVERVIEW
+  // ══════════════════════════════════════════
+  renderOverview() {
+    const comps = this.data.comps || [];
+    const m = this.data.model;
+    const ws = this.project === "lafayette"
+      ? this.data.walkscore?.lafayette : this.data.walkscore?.puerto_rico;
+    const bls = this.data.bls;
+    const latestNYC = bls?.nyc_unemployment?.slice(-1)[0]?.value || "N/A";
+    const census = this.data.census;
+
+    // Avg PSF
+    const avgPSF = comps.length ?
+      Math.round(comps.reduce((s,c) => s + c.sale_price/c.interior_sf, 0) / comps.length) : 0;
+
+    const sec = document.getElementById("sec-overview");
+    sec.innerHTML = `
+      <div class="grid g6">
+        ${this.kpi("Avg $/SF", "$"+avgPSF.toLocaleString(), "Across "+comps.length+" comps", "var(--blue)")}
+        ${this.kpi("Comps", comps.length, "Curated sample", "var(--green)")}
+        ${this.kpi("Walk Score", ws?.walk_score||"—", this.project==="lafayette"?"Lafayette":"Dorado", "var(--amber)")}
+        ${this.kpi("Model R²", m?.r2||"—", (m?.n_features||0)+"+ attributes", "var(--violet)")}
+        ${this.kpi("NYC Unemp.", latestNYC+"%", "Latest BLS", "var(--cyan)")}
+        ${this.kpi("Home Value", this.fmtK(census?.median_home_value||0), "Brooklyn median", "var(--orange)")}
+      </div>
+      <div class="grid g2">
+        <div class="card"><h3>🏙️ Avg Price/SF by Borough</h3><div class="chart-wrap"><canvas id="chBoro"></canvas></div></div>
+        <div class="card"><h3>💼 Unemployment Trend (24mo)</h3><div class="chart-wrap"><canvas id="chUnemp"></canvas></div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><h3>🚶 Walk Score — ${this.project==="lafayette"?"722 Lafayette Ave":"Dorado, PR"}</h3>
+          <div class="walk-badges">
+            ${this.walkBadge("Walk", ws?.walk_score, ws?.walk_description, "var(--green)")}
+            ${this.walkBadge("Transit", ws?.transit_score, ws?.transit_description, "var(--blue)")}
+            ${this.walkBadge("Bike", ws?.bike_score, ws?.bike_description, "var(--amber)")}
+          </div>
         </div>
-    </div>
+        <div class="card"><h3>🏠 Fair Market Rents (HUD)</h3><div class="chart-wrap"><canvas id="chFMR"></canvas></div></div>
+      </div>`;
 
-    <div style="max-width:1440px;margin:0 auto;padding:8px 24px 0;display:flex;gap:12px;flex-wrap:wrap;">
-        <a href="https://www.notion.so/330ae8ba96e281c78a3def2744e6ebe0" target="_blank" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 16px;color:#94a3b8;text-decoration:none;font-size:13px;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .2s;">📋 Notion Command Center</a>
-        <a href="https://www.notion.so/bf6a49f606294df5a0f2e2d95a70b992" target="_blank" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 16px;color:#94a3b8;text-decoration:none;font-size:13px;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .2s;">📊 Market Stats DB</a>
-        <a href="https://www.notion.so/99ebbb1a5e654a30bf899d0f0639d927" target="_blank" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 16px;color:#94a3b8;text-decoration:none;font-size:13px;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .2s;">🧠 Hedonic Valuations</a>
-        <a href="https://github.com/danieliphaus/iphaus-pipeline" target="_blank" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 16px;color:#94a3b8;text-decoration:none;font-size:13px;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .2s;">💻 GitHub Repo</a>
-    </div>
+    // Borough PSF chart
+    const boroughs = {};
+    comps.forEach(c => {
+      if (!boroughs[c.borough]) boroughs[c.borough] = [];
+      boroughs[c.borough].push(c.sale_price / c.interior_sf);
+    });
+    const bLabels = Object.keys(boroughs).sort((a,b) =>
+      (boroughs[b].reduce((s,v)=>s+v,0)/boroughs[b].length) -
+      (boroughs[a].reduce((s,v)=>s+v,0)/boroughs[a].length));
+    const bData = bLabels.map(b => Math.round(boroughs[b].reduce((s,v)=>s+v,0)/boroughs[b].length));
+    const bColors = bLabels.map(b => this.boroughColor(b));
+    this.charts.boro = this.barChart("chBoro", bLabels, bData, bColors, "$","currency");
 
-    <div class="container">
-        <!-- KPI Cards -->
-        <div class="kpi-row">
-            <div class="kpi-card">
-                <div class="kpi-label">Median Price/SF</div>
-                <div class="kpi-value">$1,247</div>
-                <div class="kpi-change up">↑ 3.2% YoY</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Active Comps</div>
-                <div class="kpi-value">30</div>
-                <div class="kpi-change neutral">Curated Sample</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Avg Walk Score</div>
-                <div class="kpi-value">89</div>
-                <div class="kpi-change up">Very Walkable</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Pipeline Value</div>
-                <div class="kpi-value">$12.4M</div>
-                <div class="kpi-change up">↑ Active Phase</div>
-            </div>
-        </div>
+    // Unemployment chart
+    const nyc = bls?.nyc_unemployment || [];
+    const pr = bls?.pr_unemployment || [];
+    const uLabels = nyc.map(d => d.label);
+    this.charts.unemp = this.lineChart("chUnemp", uLabels,
+      [{label:"NYC Metro",data:nyc.map(d=>d.value),color:"#3b82f6"},
+       {label:"Puerto Rico",data:pr.map(d=>d.value),color:"#f59e0b"}], "%");
 
-        <!-- Charts Grid -->
-        <div class="charts-grid">
-            <!-- Price Distribution by Borough -->
-            <div class="chart-container">
-                <h3>Price Distribution by Borough</h3>
-                <div class="chart-wrapper">
-                    <canvas id="boroughChart"></canvas>
-                </div>
-            </div>
+    // FMR chart
+    const hBk = this.data.hud?.brooklyn || {};
+    const hDo = this.data.hud?.dorado || {};
+    const fmrLabels = ["Studio","1BR","2BR","3BR","4BR"];
+    const fmrBk = [hBk.studio,hBk.one_br,hBk.two_br,hBk.three_br,hBk.four_br];
+    const fmrDo = [hDo.studio,hDo.one_br,hDo.two_br,hDo.three_br,hDo.four_br];
+    this.charts.fmr = this.groupedBar("chFMR", fmrLabels,
+      [{label:"Brooklyn",data:fmrBk,color:"#3b82f6"},{label:"Dorado",data:fmrDo,color:"#f59e0b"}]);
+  }
 
-            <!-- Neighborhood Comparison -->
-            <div class="chart-container">
-                <h3>Top 10 Neighborhoods by Price</h3>
-                <div class="chart-wrapper">
-                    <canvas id="neighborhoodChart"></canvas>
-                </div>
-            </div>
+  // ══════════════════════════════════════════
+  // COMPS EXPLORER
+  // ══════════════════════════════════════════
+  renderComps() {
+    const allBoroughs = ["All", ...new Set(this.data.comps.map(c=>c.borough))];
+    const comps = this.getComps();
 
-            <!-- Price Trends -->
-            <div class="chart-container chart-full-width">
-                <h3>12-Month Price Trend (Target Neighborhoods)</h3>
-                <div class="chart-wrapper" style="height: 280px;">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
+    const sec = document.getElementById("sec-comps");
+    sec.innerHTML = `
+      <div class="filters" id="boroFilters"></div>
+      <div class="grid g2">
+        <div class="card"><h3>📐 Price/SF by Property</h3><div class="chart-wrap"><canvas id="chPSF"></canvas></div></div>
+        <div class="card"><h3>🏙️ Borough Distribution</h3><div class="chart-wrap"><canvas id="chPie"></canvas></div></div>
+      </div>
+      <div class="card"><h3>📋 Comp Details (${comps.length} properties)</h3><div id="compTable"></div></div>`;
 
-            <!-- Hedonic Model Performance -->
-            <div class="chart-container chart-full-width">
-                <h3>Hedonic Model: Predicted vs Actual Price</h3>
-                <div class="chart-wrapper" style="height: 280px;">
-                    <canvas id="hedonicChart"></canvas>
-                </div>
-            </div>
-        </div>
+    // Filters
+    const fDiv = document.getElementById("boroFilters");
+    allBoroughs.forEach(b => {
+      const btn = document.createElement("button");
+      btn.className = "fbtn" + (b === this.boroughFilter ? " active" : "");
+      btn.textContent = b;
+      btn.onclick = () => this.setBorough(b);
+      fDiv.appendChild(btn);
+    });
 
-        <!-- Project Status Table -->
-        <div class="table-container">
-            <h3>Development Pipeline</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Project</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Timeline</th>
-                        <th>Key Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Lafayette</strong></td>
-                        <td>NYC (Manhattan)</td>
-                        <td><span class="status-badge status-in-progress">In Progress</span></td>
-                        <td>Foundation Ready</td>
-                        <td>Plumbing/HVAC submissions finalized</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Puerto Rico Villas</strong></td>
-                        <td>Dorado, PR</td>
-                        <td><span class="status-badge status-planning">Planning</span></td>
-                        <td>Q2 2026</td>
-                        <td>2 mock-ups funded (~$1M investor capital)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Florida Development</strong></td>
-                        <td>TBD</td>
-                        <td><span class="status-badge status-research">Research</span></td>
-                        <td>Q3 2026+</td>
-                        <td>Market analysis phase</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    // PSF bar chart
+    const sorted = [...comps].sort((a,b) => (b.sale_price/b.interior_sf) - (a.sale_price/a.interior_sf));
+    this.charts.psf = this.barChart("chPSF",
+      sorted.map(c => c.address.split(",")[0].substring(0,20)),
+      sorted.map(c => Math.round(c.sale_price/c.interior_sf)),
+      sorted.map(c => this.boroughColor(c.borough)), "$","currency");
 
-        <!-- Activity Feed -->
-        <h3 style="margin-top: 2.5rem; margin-bottom: 1.5rem;">Recent Activity</h3>
-        <div class="activity-feed">
-            <div class="activity-item highlight">
-                <div class="activity-time">Today at 14:23</div>
-                <div class="activity-text">Hedonic model updated with 30-comp curated dataset. R² = 0.93</div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-time">Today at 09:15</div>
-                <div class="activity-text">PLUTO data refreshed for Manhattan R5-R7 zones</div>
-            </div>
-            <div class="activity-item highlight">
-                <div class="activity-time">Yesterday at 16:42</div>
-                <div class="activity-text">New comparable property added: Upper East Side 3BR, $1,285/SF</div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-time">Yesterday at 11:30</div>
-                <div class="activity-text">Lafayette foundation pre-construction submitted to DOB</div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-time">Apr 2 at 13:45</div>
-                <div class="activity-text">Puerto Rico broker coordination meeting completed</div>
-            </div>
-            <div class="activity-item highlight">
-                <div class="activity-time">Apr 1 at 10:20</div>
-                <div class="activity-text">Q2 market analysis report generated. 45 new data points processed</div>
-            </div>
-        </div>
-    </div>
+    // Pie chart
+    const boroCounts = {};
+    comps.forEach(c => { boroCounts[c.borough] = (boroCounts[c.borough]||0)+1; });
+    this.charts.pie = this.doughnut("chPie",
+      Object.keys(boroCounts), Object.values(boroCounts),
+      Object.keys(boroCounts).map(b => this.boroughColor(b)));
 
-    <script>
-        // ============= THEME TOGGLE =============
-        let isDarkTheme = true;
+    // Table
+    this.renderCompTable(comps);
+  }
 
-        function toggleTheme() {
-            isDarkTheme = !isDarkTheme;
-            const btn = document.querySelector('.theme-toggle');
+  renderCompTable(comps) {
+    const cols = [
+      {key:"address",label:"Address"},{key:"borough",label:"Borough"},
+      {key:"neighborhood",label:"Neighborhood"},{key:"sale_price",label:"Price",fmt:"currency"},
+      {key:"interior_sf",label:"SF",fmt:"number"},{key:"price_per_sf",label:"$/SF",fmt:"currency"},
+      {key:"bedrooms",label:"Bed"},{key:"bathrooms",label:"Bath"},{key:"year_built",label:"Year"}
+    ];
+    let sorted = [...comps];
+    if (this.sortCol) {
+      sorted.sort((a,b) => {
+        const av = a[this.sortCol], bv = b[this.sortCol];
+        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+        return this.sortDir === "asc" ? cmp : -cmp;
+      });
+    }
+    let html = '<table><thead><tr>';
+    cols.forEach(c => {
+      const arrow = this.sortCol === c.key ? (this.sortDir==="asc"?" ▲":" ▼") : "";
+      html += `<th onclick="D.sortBy('${c.key}')">${c.label}${arrow}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    sorted.forEach(r => {
+      html += '<tr>';
+      cols.forEach(c => {
+        let v = r[c.key];
+        if (c.fmt === "currency") v = this.fmt(v);
+        else if (c.fmt === "number") v = this.fmtN(v);
+        if (c.key === "borough") v = `<span class="badge" style="background:${this.boroughColor(r.borough)}22;color:${this.boroughColor(r.borough)}">${v}</span>`;
+        html += `<td>${v}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById("compTable").innerHTML = html;
+  }
 
-            if (isDarkTheme) {
-                document.body.classList.remove('light-theme');
-                btn.textContent = '🌙 Dark Mode';
-            } else {
-                document.body.classList.add('light-theme');
-                btn.textContent = '☀️ Light Mode';
-            }
+  sortBy(col) {
+    if (this.sortCol === col) this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
+    else { this.sortCol = col; this.sortDir = "desc"; }
+    this.renderComps();
+  }
 
-            // Refresh charts with new colors
-            setTimeout(() => {
-                updateChartsForTheme();
-            }, 100);
-        }
+  // ══════════════════════════════════════════
+  // HEDONIC MODEL
+  // ══════════════════════════════════════════
+  renderModel() {
+    const m = this.data.model;
+    if (!m) {
+      document.getElementById("sec-model").innerHTML = '<div class="card"><p>Model not available — run hedonic_model.py to generate coefficients.</p></div>';
+      return;
+    }
+    const p1 = this.predict(this.scenario);
+    const p2 = this.showCompare ? this.predict(this.scenario2) : null;
+    const psf1 = p1 ? p1/this.scenario.interior_sf : 0;
+    const psf2 = p2 ? p2/this.scenario2.interior_sf : 0;
 
-        // ============= DATE DISPLAY =============
-        function updateDate() {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const today = new Date().toLocaleDateString('en-US', options);
-            document.getElementById('dateDisplay').textContent = today;
-        }
-        updateDate();
-
-        // ============= CHART COLORS =============
-        function getChartColors() {
-            const isDark = !document.body.classList.contains('light-theme');
-            return {
-                primary: '#2E75B6',
-                secondary: '#38A169',
-                tertiary: '#F4A261',
-                danger: '#E63946',
-                text: isDark ? '#FFFFFF' : '#1B2A4A',
-                textSecondary: isDark ? '#A8B5C5' : '#6B7280',
-                grid: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-            };
-        }
-
-        // ============= REALISTIC NYC DATA =============
-        const nyc_boroughs_data = {
-            labels: ['Manhattan', 'Brooklyn', 'Queens', 'Bronx'],
-            data: [1680, 1247, 895, 720],
-        };
-
-        const nyc_neighborhoods = {
-            labels: [
-                'Tribeca',
-                'Upper East Side',
-                'SoHo',
-                'West Village',
-                'NoLita',
-                'Nolita Heights',
-                'Park Slope',
-                'DUMBO',
-                'Williamsburg',
-                'Long Island City'
-            ],
-            data: [2850, 2680, 2540, 2380, 2290, 2180, 1940, 1885, 1745, 1620],
-        };
-
-        const price_trend_data = {
-            labels: ['Apr 25', 'May 25', 'Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26'],
-            datasets: [
-                {
-                    label: 'Manhattan',
-                    data: [1580, 1610, 1640, 1680, 1695, 1705, 1710, 1715, 1690, 1680, 1670, 1680],
-                    borderColor: '#2E75B6',
-                    backgroundColor: 'rgba(46, 117, 182, 0.05)',
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#2E75B6',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                },
-                {
-                    label: 'Brooklyn',
-                    data: [1120, 1145, 1165, 1200, 1230, 1245, 1255, 1260, 1250, 1240, 1235, 1247],
-                    borderColor: '#38A169',
-                    backgroundColor: 'rgba(56, 161, 105, 0.05)',
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#38A169',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                },
-                {
-                    label: 'Queens',
-                    data: [820, 835, 850, 870, 880, 890, 895, 900, 890, 885, 880, 895],
-                    borderColor: '#F4A261',
-                    backgroundColor: 'rgba(244, 162, 97, 0.05)',
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#F4A261',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                }
-            ]
-        };
-
-        // Hedonic model - 30 curated comps
-        const hedonic_comps = [
-            { neighborhood: 'UES', address: '65 E 76th', actual: 2680, predicted: 2650 },
-            { neighborhood: 'Tribeca', address: '100 Franklin', actual: 2850, predicted: 2820 },
-            { neighborhood: 'SoHo', address: '155 Spring', actual: 2540, predicted: 2580 },
-            { neighborhood: 'WV', address: '41 Perry', actual: 2380, predicted: 2400 },
-            { neighborhood: 'Noho', address: '285 Lafayette', actual: 2290, predicted: 2310 },
-            { neighborhood: 'UWS', address: '144 W 72nd', actual: 2150, predicted: 2170 },
-            { neighborhood: 'Midtown', address: '515 Park Ave', actual: 1980, predicted: 2010 },
-            { neighborhood: 'Chelsea', address: '520 W 27th', actual: 1820, predicted: 1840 },
-            { neighborhood: 'Murray Hill', address: '345 E 42nd', actual: 1680, predicted: 1690 },
-            { neighborhood: 'Gramercy', address: '50 Gramercy', actual: 1890, predicted: 1910 },
-            { neighborhood: 'Flatiron', address: '22 E 23rd', actual: 1740, predicted: 1760 },
-            { neighborhood: 'LES', address: '142 Ludlow', actual: 1950, predicted: 1920 },
-            { neighborhood: 'East Village', address: '45 E 3rd', actual: 1750, predicted: 1770 },
-            { neighborhood: 'NYU/WSQ', address: '99 University', actual: 1620, predicted: 1640 },
-            { neighborhood: 'Park Slope', address: '455 7th Ave', actual: 1940, predicted: 1960 },
-            { neighborhood: 'DUMBO', address: '50 Washington', actual: 1885, predicted: 1875 },
-            { neighborhood: 'Williamsburg', address: '384 Keap', actual: 1745, predicted: 1730 },
-            { neighborhood: 'LIC', address: '27-30 Thomson', actual: 1620, predicted: 1610 },
-            { neighborhood: 'Astoria', address: '30-30 47th', actual: 1420, predicted: 1440 },
-            { neighborhood: 'Long Island City', address: '100 Dutch Kills', actual: 1580, predicted: 1590 },
-            { neighborhood: 'Sunset Park', address: '5918 6th Ave', actual: 1280, predicted: 1300 },
-            { neighborhood: 'Prospect Heights', actual: 1510, predicted: 1520 },
-            { neighborhood: 'Crown Heights', actual: 1350, predicted: 1360 },
-            { neighborhood: 'Bed-Stuy', actual: 1420, predicted: 1410 },
-            { neighborhood: 'Ridgewood', actual: 1185, predicted: 1200 },
-            { neighborhood: 'Astoria (Queens)', actual: 1320, predicted: 1310 },
-            { neighborhood: 'Forest Hills', actual: 1150, predicted: 1160 },
-            { neighborhood: 'Jackson Heights', actual: 1080, predicted: 1090 },
-            { neighborhood: 'Mott Haven', actual: 920, predicted: 930 },
-            { neighborhood: 'Fordham', actual: 880, predicted: 870 }
-        ];
-
-        const hedonic_labels = hedonic_comps.map(c => c.neighborhood);
-        const hedonic_actual = hedonic_comps.map(c => c.actual);
-        const hedonic_predicted = hedonic_comps.map(c => c.predicted);
-
-        // ============= BOROUGH CHART =============
-        let boroughChart = null;
-
-        function createBoroughChart() {
-            const ctx = document.getElementById('boroughChart').getContext('2d');
-            const colors = getChartColors();
-
-            boroughChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: nyc_boroughs_data.labels,
-                    datasets: [{
-                        label: 'Median Price/SF ($)',
-                        data: nyc_boroughs_data.data,
-                        backgroundColor: [
-                            'rgba(46, 117, 182, 0.7)',
-                            'rgba(56, 161, 105, 0.7)',
-                            'rgba(244, 162, 97, 0.7)',
-                            'rgba(230, 57, 70, 0.7)',
-                        ],
-                        borderColor: [
-                            '#2E75B6',
-                            '#38A169',
-                            '#F4A261',
-                            '#E63946',
-                        ],
-                        borderWidth: 2,
-                        borderRadius: 4,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'x',
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: colors.grid },
-                            ticks: { color: colors.textSecondary }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: colors.textSecondary }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ============= NEIGHBORHOOD CHART =============
-        let neighborhoodChart = null;
-
-        function createNeighborhoodChart() {
-            const ctx = document.getElementById('neighborhoodChart').getContext('2d');
-            const colors = getChartColors();
-
-            neighborhoodChart = new Chart(ctx, {
-                type: 'barh',
-                data: {
-                    labels: nyc_neighborhoods.labels,
-                    datasets: [{
-                        label: 'Median Price/SF ($)',
-                        data: nyc_neighborhoods.data,
-                        backgroundColor: 'rgba(46, 117, 182, 0.7)',
-                        borderColor: '#2E75B6',
-                        borderWidth: 1.5,
-                        borderRadius: 3,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: { color: colors.grid },
-                            ticks: { color: colors.textSecondary }
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: { color: colors.textSecondary }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ============= TREND CHART =============
-        let trendChart = null;
-
-        function createTrendChart() {
-            const ctx = document.getElementById('trendChart').getContext('2d');
-            const colors = getChartColors();
-
-            trendChart = new Chart(ctx, {
-                type: 'line',
-                data: price_trend_data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: colors.text, boxWidth: 12, padding: 15, font: { size: 11 } }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: { color: colors.grid },
-                            ticks: { color: colors.textSecondary }
-                        },
-                        x: {
-                            grid: { color: colors.grid },
-                            ticks: { color: colors.textSecondary }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ============= HEDONIC CHART =============
-        let hedonicChart = null;
-
-        function createHedonicChart() {
-            const ctx = document.getElementById('hedonicChart').getContext('2d');
-            const colors = getChartColors();
-
-            hedonicChart = new Chart(ctx, {
-                type: 'scatter',
-                data: {
-                    datasets: [
-                        {
-                            label: 'Actual Price',
-                            data: hedonic_actual.map((val, i) => ({ x: i, y: val })),
-                            borderColor: '#2E75B6',
-                            backgroundColor: 'rgba(46, 117, 182, 0.6)',
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            showLine: false,
-                        },
-                        {
-                            label: 'Predicted Price',
-                            data: hedonic_predicted.map((val, i) => ({ x: i, y: val })),
-                            borderColor: '#38A169',
-                            backgroundColor: 'rgba(56, 161, 105, 0.3)',
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
-                            showLine: false,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: colors.text, boxWidth: 12, padding: 15, font: { size: 11 } }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': $' + context.parsed.y.toFixed(0);
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: { color: colors.grid },
-                            ticks: { color: colors.textSecondary },
-                            title: { display: true, text: 'Price/SF ($)', color: colors.text }
-                        },
-                        x: {
-                            grid: { color: colors.grid },
-                            ticks: { color: colors.textSecondary },
-                            title: { display: true, text: 'Comparable Index', color: colors.text }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ============= THEME UPDATE FUNCTION =============
-        function updateChartsForTheme() {
-            const colors = getChartColors();
-
-            if (boroughChart) {
-                boroughChart.options.scales.y.grid.color = colors.grid;
-                boroughChart.options.scales.y.ticks.color = colors.textSecondary;
-                boroughChart.options.scales.x.ticks.color = colors.textSecondary;
-                boroughChart.update('none');
-            }
-
-            if (neighborhoodChart) {
-                neighborhoodChart.options.scales.x.grid.color = colors.grid;
-                neighborhoodChart.options.scales.x.ticks.color = colors.textSecondary;
-                neighborhoodChart.options.scales.y.ticks.color = colors.textSecondary;
-                neighborhoodChart.update('none');
-            }
-
-            if (trendChart) {
-                trendChart.options.scales.y.grid.color = colors.grid;
-                trendChart.options.scales.y.ticks.color = colors.textSecondary;
-                trendChart.options.scales.x.grid.color = colors.grid;
-                trendChart.options.scales.x.ticks.color = colors.textSecondary;
-                trendChart.options.plugins.legend.labels.color = colors.text;
-                trendChart.update('none');
-            }
-
-            if (hedonicChart) {
-                hedonicChart.options.scales.y.grid.color = colors.grid;
-                hedonicChart.options.scales.y.ticks.color = colors.textSecondary;
-                hedonicChart.options.scales.x.grid.color = colors.grid;
-                hedonicChart.options.scales.x.ticks.color = colors.textSecondary;
-                hedonicChart.options.plugins.legend.labels.color = colors.text;
-                hedonicChart.update('none');
-            }
-        }
-
-        // ============= INITIALIZE ALL CHARTS =============
-        window.addEventListener('load', () => {
-            createBoroughChart();
-            createNeighborhoodChart();
-            createTrendChart();
-            createHedonicChart();
-        });
-    </script>
-
-    <footer style="max-width:1440px;margin:32px auto 0;padding:24px;text-align:center;border-top:1px solid #1e293b;">
-        <p style="color:#64748b;font-size:13px;font-family:Inter,sans-serif;">
-            🤖 Auto-generated by the ipHaus Pipeline v2 · 11 active connectors · Refreshes every Monday 9 AM ET via GitHub Actions
+    const sec = document.getElementById("sec-model");
+    sec.innerHTML = `
+      <div class="card" style="background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(59,130,246,.1));border-color:rgba(139,92,246,.2);">
+        <p style="font-size:13px;color:var(--text2);">
+          <strong style="color:var(--violet);">Live Hedonic Pricing Model</strong> —
+          R² = ${m.r2} · ${m.n_features} features · Trained on ${m.n_comps} curated NYC comps · Median price ${this.fmtK(m.median_price)}.
+          Adjust sliders to see predicted values update in real time using the <em>actual trained coefficients</em>.
         </p>
-        <p style="color:#475569;font-size:12px;font-family:Inter,sans-serif;margin-top:8px;">
-            © 2026 ipHaus · Prefab & Modular Construction · NYC · Puerto Rico
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h3>🏠 Scenario A</h3>
+          <div id="controls1"></div>
+          <div class="result"><div class="price">${p1 ? this.fmtK(p1) : "—"}</div><div class="psf">${p1 ? this.fmt(Math.round(psf1))+"/SF" : ""}</div></div>
+        </div>
+        <div class="card">
+          <h3>${this.showCompare ? "🏢 Scenario B" : "⚡ Compare"}</h3>
+          ${this.showCompare ? `
+            <div id="controls2"></div>
+            <div class="result"><div class="price" style="color:var(--blue);">${p2 ? this.fmtK(p2) : "—"}</div><div class="psf">${p2 ? this.fmt(Math.round(psf2))+"/SF" : ""}</div></div>
+            ${p1 && p2 ? `<div style="text-align:center;margin-top:8px;font-size:13px;color:${p2>p1?"var(--green)":"var(--rose)"};">${p2>p1?"+":""}${this.fmtK(p2-p1)} (${((p2/p1-1)*100).toFixed(1)}%)</div>` : ""}
+          ` : `<div style="display:flex;align-items:center;justify-content:center;height:200px;">
+            <button class="fbtn active" onclick="D.showCompare=true;D.renderModel();">+ Add Comparison Scenario</button>
+          </div>`}
+        </div>
+      </div>
+      <div class="card"><h3>💎 Top Attribute Premiums</h3><div class="chart-wrap"><canvas id="chPremiums"></canvas></div></div>
+      ${m.predictions ? `<div class="card"><h3>🎯 Model Predictions vs Actuals (${m.predictions.length} comps)</h3><div id="predTable"></div></div>` : ""}
+    `;
+
+    this.buildControls("controls1", this.scenario, 1);
+    if (this.showCompare) this.buildControls("controls2", this.scenario2, 2);
+
+    // Premiums chart
+    const prems = (m.premiums || []).filter(p => p.type === "premium" && Math.abs(p.pct_premium) > 1).slice(0,12);
+    if (prems.length && document.getElementById("chPremiums")) {
+      const ctx = document.getElementById("chPremiums").getContext("2d");
+      this.charts.premiums = new Chart(ctx, {
+        type:"bar",
+        data: {
+          labels: prems.map(p => p.label),
+          datasets: [{
+            data: prems.map(p => p.pct_premium),
+            backgroundColor: prems.map(p => p.pct_premium > 0 ? "#10b98188" : "#f43f5e88"),
+            borderColor: prems.map(p => p.pct_premium > 0 ? "#10b981" : "#f43f5e"),
+            borderWidth: 1, borderRadius: 4,
+          }]
+        },
+        options: {
+          indexAxis:"y", responsive:true, maintainAspectRatio:false,
+          plugins: { legend:{display:false},
+            tooltip:{callbacks:{label:c=>`${c.parsed.x>0?"+":""}${c.parsed.x.toFixed(1)}% premium`}} },
+          scales: {
+            x: { grid:{color:"#1e293b"}, ticks:{color:"#94a3b8",callback:v=>v+"%"} },
+            y: { grid:{display:false}, ticks:{color:"#94a3b8",font:{size:11}} }
+          }
+        }
+      });
+    }
+
+    // Predictions table
+    if (m.predictions && document.getElementById("predTable")) {
+      let html = '<table><thead><tr><th>Address</th><th>Borough</th><th>Actual</th><th>Predicted</th><th>Residual</th></tr></thead><tbody>';
+      m.predictions.forEach(p => {
+        const resColor = Math.abs(p.residual_pct) < 10 ? "var(--green)" : Math.abs(p.residual_pct) < 20 ? "var(--amber)" : "var(--rose)";
+        html += `<tr><td>${p.address.substring(0,30)}</td><td><span class="badge" style="background:${this.boroughColor(p.borough)}22;color:${this.boroughColor(p.borough)}">${p.borough}</span></td>
+          <td>${this.fmt(p.actual)}</td><td>${this.fmt(p.predicted)}</td>
+          <td style="color:${resColor}">${p.residual_pct>0?"+":""}${p.residual_pct}%</td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById("predTable").innerHTML = html;
+    }
+  }
+
+  buildControls(containerId, scenario, idx) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    const sliders = [
+      ["interior_sf","Interior SF",400,4000,50],["bedrooms","Bedrooms",0,6,1],
+      ["bathrooms","Bathrooms",1,5,0.5],["floor_level","Floor",1,50,1],
+      ["subway_dist_ft","Subway Dist (ft)",100,3000,50],["school_rating","School Rating",1,10,0.5],
+    ];
+    const toggles = [
+      ["is_new_development","New Dev"],["has_doorman","Doorman"],["has_elevator","Elevator"],
+      ["has_gym","Gym"],["has_parking","Parking"],["has_washer_dryer","In-Unit W/D"],
+      ["is_condo","Condo"],["has_concierge","Concierge"],["has_storage","Storage"],
+    ];
+
+    let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+    sliders.forEach(([key,label,min,max,step]) => {
+      html += `<div class="ctrl"><label>${label}<span>${scenario[key]}</span></label>
+        <input type="range" min="${min}" max="${max}" step="${step}" value="${scenario[key]}"
+        oninput="D.updateScenario(${idx},'${key}',+this.value)"></div>`;
+    });
+    html += '</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">';
+    toggles.forEach(([key,label]) => {
+      html += `<button class="tog${scenario[key]?" on":""}" onclick="D.toggleScenario(${idx},'${key}')">${label}</button>`;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  updateScenario(idx, key, val) {
+    if (idx === 1) this.scenario[key] = val;
+    else this.scenario2[key] = val;
+    this.renderModel();
+  }
+
+  toggleScenario(idx, key) {
+    if (idx === 1) this.scenario[key] = this.scenario[key] ? 0 : 1;
+    else this.scenario2[key] = this.scenario2[key] ? 0 : 1;
+    this.renderModel();
+  }
+
+  // ══════════════════════════════════════════
+  // MARKET DATA
+  // ══════════════════════════════════════════
+  renderMarket() {
+    const census = this.data.census || {};
+    const bls = this.data.bls || {};
+    const ws = this.data.walkscore || {};
+
+    const sec = document.getElementById("sec-market");
+    sec.innerHTML = `
+      <div class="grid g6" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+        ${this.kpi("Median Income", this.fmt(census.median_income||0), "Brooklyn tracts", "var(--green)")}
+        ${this.kpi("Population", this.fmtN(census.population||0), "Nearby tracts", "var(--blue)")}
+        ${this.kpi("Housing Units", this.fmtN(census.housing_units||0), "Limited supply", "var(--amber)")}
+        ${this.kpi("Home Value", this.fmtK(census.median_home_value||0), "Median, tracts", "var(--violet)")}
+      </div>
+      <div class="grid g2">
+        <div class="card"><h3>💼 Unemployment Trends (24 Mo)</h3><div class="chart-wrap"><canvas id="chUnempM"></canvas></div></div>
+        <div class="card"><h3>🏠 Fair Market Rents by Unit Type</h3><div class="chart-wrap"><canvas id="chFMRM"></canvas></div></div>
+      </div>
+      <div class="card"><h3>🚶 Walk Score Comparison</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:10px;">
+          <div style="text-align:center;"><h4 style="font-size:13px;color:var(--text3);margin-bottom:12px;">722 Lafayette Ave, Brooklyn</h4>
+            <div class="walk-badges">
+              ${this.walkBadge("Walk",ws.lafayette?.walk_score,ws.lafayette?.walk_description,"var(--green)")}
+              ${this.walkBadge("Transit",ws.lafayette?.transit_score,ws.lafayette?.transit_description,"var(--blue)")}
+              ${this.walkBadge("Bike",ws.lafayette?.bike_score,ws.lafayette?.bike_description,"var(--amber)")}
+            </div>
+          </div>
+          <div style="text-align:center;"><h4 style="font-size:13px;color:var(--text3);margin-bottom:12px;">Dorado, Puerto Rico</h4>
+            <div class="walk-badges">
+              ${this.walkBadge("Walk",ws.puerto_rico?.walk_score,ws.puerto_rico?.walk_description,"var(--green)")}
+              ${this.walkBadge("Transit",ws.puerto_rico?.transit_score,ws.puerto_rico?.transit_description,"var(--blue)")}
+              ${this.walkBadge("Bike",ws.puerto_rico?.bike_score,ws.puerto_rico?.bike_description,"var(--amber)")}
+            </div>
+          </div>
+        </div>
+      </div>
+      ${bls.cpi && bls.cpi.length ? `<div class="card"><h3>📈 Consumer Price Index — NY-NJ-PA Metro</h3><div class="chart-wrap"><canvas id="chCPI"></canvas></div></div>` : ""}
+    `;
+
+    // Charts
+    const nyc = bls.nyc_unemployment || [];
+    const pr = bls.pr_unemployment || [];
+    this.charts.unempM = this.lineChart("chUnempM", nyc.map(d=>d.label),
+      [{label:"NYC Metro",data:nyc.map(d=>d.value),color:"#3b82f6"},
+       {label:"Puerto Rico",data:pr.map(d=>d.value),color:"#f59e0b"}], "%");
+
+    const hBk = this.data.hud?.brooklyn || {};
+    const hDo = this.data.hud?.dorado || {};
+    this.charts.fmrM = this.groupedBar("chFMRM", ["Studio","1BR","2BR","3BR","4BR"],
+      [{label:"Brooklyn",data:[hBk.studio,hBk.one_br,hBk.two_br,hBk.three_br,hBk.four_br],color:"#3b82f6"},
+       {label:"Dorado",data:[hDo.studio,hDo.one_br,hDo.two_br,hDo.three_br,hDo.four_br],color:"#f59e0b"}]);
+
+    if (bls.cpi && bls.cpi.length) {
+      this.charts.cpi = this.lineChart("chCPI", bls.cpi.map(d=>d.label),
+        [{label:"CPI",data:bls.cpi.map(d=>d.value),color:"#8b5cf6"}], "");
+    }
+  }
+
+  // ══════════════════════════════════════════
+  // CONSTRUCTION & QUALITY
+  // ══════════════════════════════════════════
+  renderConstruction() {
+    const dob = this.data.dob || {};
+    const c311 = this.data.complaints || {};
+    const acris = this.data.acris || {};
+
+    const sec = document.getElementById("sec-construction");
+    sec.innerHTML = `
+      <div class="grid g2">
+        <div class="card"><h3>🏗️ DOB Permits — Bed-Stuy Area</h3><p class="sub">${dob.total||0} permits near Lafayette</p>
+          <div class="chart-wrap"><canvas id="chDOB"></canvas></div></div>
+        <div class="card"><h3>📞 311 Complaints — 0.5mi Radius</h3><p class="sub">${c311.total||0} recent complaints</p>
+          <div class="chart-wrap"><canvas id="chC311"></canvas></div></div>
+      </div>
+      <div class="card"><h3>📜 ACRIS Property Records — BBL 3018430001</h3>
+        <div class="grid g6" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));">
+          ${this.kpi("Total Docs", acris.total||0, "", "var(--blue)")}
+          ${Object.entries(acris.types||{}).map(([k,v]) => this.kpi(k, v, "", "var(--text2)")).join("")}
+        </div>
+      </div>
+      <div class="card" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2);">
+        <p style="font-size:13px;color:var(--text2);">
+          <strong style="color:var(--green);">Assessment:</strong> No red flags in neighborhood quality data.
+          311 complaints are typical for a healthy Brooklyn neighborhood. ${dob.types?.NB||0} new building permits
+          nearby confirms active development demand in the Lafayette corridor.
         </p>
-    </footer>
+      </div>`;
+
+    // DOB chart
+    const dobChart = dob.chart || [];
+    this.charts.dob = this.barChart("chDOB",
+      dobChart.map(d=>d.type), dobChart.map(d=>d.count),
+      ["#3b82f6","#8b5cf6","#06b6d4","#10b981","#f59e0b","#f43f5e"], "","number", true);
+
+    // 311 chart
+    const c311Chart = c311.chart || [];
+    this.charts.c311 = this.doughnut("chC311",
+      c311Chart.map(d=>d.type), c311Chart.map(d=>d.count),
+      ["#f59e0b","#f43f5e","#3b82f6","#8b5cf6","#06b6d4","#10b981","#f97316","#64748b"]);
+  }
+
+  // ══════════════════════════════════════════
+  // CHART FACTORY METHODS
+  // ══════════════════════════════════════════
+  barChart(id, labels, data, colors, prefix, fmt, horiz) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return new Chart(el.getContext("2d"), {
+      type:"bar",
+      data: { labels, datasets:[{ data, backgroundColor:colors.map(c=>c+"CC"),
+        borderColor:colors, borderWidth:1, borderRadius:4 }] },
+      options: {
+        indexAxis: horiz?"y":"x", responsive:true, maintainAspectRatio:false,
+        plugins: { legend:{display:false} },
+        scales: {
+          x: { grid:{color:"#1e293b"}, ticks:{color:"#94a3b8",callback:v=>
+            fmt==="currency"?"$"+v.toLocaleString():v.toLocaleString()} },
+          y: { grid:{color: horiz?"#1e293b":"transparent"}, ticks:{color:"#94a3b8",font:{size:11}} }
+        }
+      }
+    });
+  }
+
+  lineChart(id, labels, datasets, suffix) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return new Chart(el.getContext("2d"), {
+      type:"line",
+      data: { labels, datasets: datasets.map(ds => ({
+        label:ds.label, data:ds.data, borderColor:ds.color,
+        backgroundColor:ds.color+"20", borderWidth:2, fill:true,
+        tension:.3, pointRadius:2, pointHoverRadius:5
+      })) },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:"index",intersect:false},
+        plugins: { legend:{labels:{color:"#94a3b8",usePointStyle:true}} },
+        scales: {
+          x: { grid:{display:false}, ticks:{color:"#94a3b8",maxRotation:45,font:{size:10}} },
+          y: { grid:{color:"#1e293b"}, ticks:{color:"#94a3b8",callback:v=>v+suffix} }
+        }
+      }
+    });
+  }
+
+  groupedBar(id, labels, datasets) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return new Chart(el.getContext("2d"), {
+      type:"bar",
+      data: { labels, datasets: datasets.map(ds => ({
+        label:ds.label, data:ds.data, backgroundColor:ds.color+"CC",
+        borderColor:ds.color, borderWidth:1, borderRadius:4
+      })) },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins: { legend:{labels:{color:"#94a3b8"}} },
+        scales: {
+          x: { grid:{display:false}, ticks:{color:"#94a3b8"} },
+          y: { grid:{color:"#1e293b"}, ticks:{color:"#94a3b8",callback:v=>"$"+v.toLocaleString()} }
+        }
+      }
+    });
+  }
+
+  doughnut(id, labels, data, colors) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return new Chart(el.getContext("2d"), {
+      type:"doughnut",
+      data: { labels, datasets:[{ data, backgroundColor:colors.map(c=>c+"CC"),
+        borderColor:"#111827", borderWidth:2 }] },
+      options: {
+        responsive:true, maintainAspectRatio:false, cutout:"55%",
+        plugins: { legend:{position:"right",labels:{color:"#94a3b8",usePointStyle:true,padding:10,font:{size:11}}} }
+      }
+    });
+  }
+
+  // ── HTML HELPERS ──
+  kpi(label, value, detail, color) {
+    return `<div class="card kpi"><div class="label">${label}</div>
+      <div class="val" style="color:${color}">${value}</div>
+      <div class="det">${detail}</div></div>`;
+  }
+
+  walkBadge(label, score, desc, color) {
+    if (score == null) return `<div class="wb"><div class="lbl">${label}</div><div class="score" style="color:var(--text3);">—</div></div>`;
+    return `<div class="wb"><div class="lbl">${label}</div><div class="score" style="color:${color}">${score}</div><div class="desc">${desc||""}</div></div>`;
+  }
+}
+
+// ── BOOT ──
+const D = new Dashboard(RAW);
+</script>
 </body>
 </html>

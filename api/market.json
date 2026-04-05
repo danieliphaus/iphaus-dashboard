@@ -1,0 +1,520 @@
+{
+  "bls": {
+    "nyc_unemployment": [
+      {
+        "label": "Jan 24",
+        "year": 2024,
+        "month": 1,
+        "value": 4.4
+      },
+      {
+        "label": "Feb 24",
+        "year": 2024,
+        "month": 2,
+        "value": 4.6
+      },
+      {
+        "label": "Mar 24",
+        "year": 2024,
+        "month": 3,
+        "value": 4.4
+      },
+      {
+        "label": "Apr 24",
+        "year": 2024,
+        "month": 4,
+        "value": 4.0
+      },
+      {
+        "label": "May 24",
+        "year": 2024,
+        "month": 5,
+        "value": 4.3
+      },
+      {
+        "label": "Jun 24",
+        "year": 2024,
+        "month": 6,
+        "value": 4.7
+      },
+      {
+        "label": "Jul 24",
+        "year": 2024,
+        "month": 7,
+        "value": 5.2
+      },
+      {
+        "label": "Aug 24",
+        "year": 2024,
+        "month": 8,
+        "value": 5.1
+      },
+      {
+        "label": "Sep 24",
+        "year": 2024,
+        "month": 9,
+        "value": 4.3
+      },
+      {
+        "label": "Oct 24",
+        "year": 2024,
+        "month": 10,
+        "value": 4.5
+      },
+      {
+        "label": "Nov 24",
+        "year": 2024,
+        "month": 11,
+        "value": 4.5
+      },
+      {
+        "label": "Dec 24",
+        "year": 2024,
+        "month": 12,
+        "value": 4.3
+      },
+      {
+        "label": "Jan 25",
+        "year": 2025,
+        "month": 1,
+        "value": 4.7
+      },
+      {
+        "label": "Feb 25",
+        "year": 2025,
+        "month": 2,
+        "value": 4.4
+      },
+      {
+        "label": "Mar 25",
+        "year": 2025,
+        "month": 3,
+        "value": 4.4
+      },
+      {
+        "label": "Apr 25",
+        "year": 2025,
+        "month": 4,
+        "value": 4.1
+      },
+      {
+        "label": "May 25",
+        "year": 2025,
+        "month": 5,
+        "value": 4.0
+      },
+      {
+        "label": "Jun 25",
+        "year": 2025,
+        "month": 6,
+        "value": 4.5
+      },
+      {
+        "label": "Jul 25",
+        "year": 2025,
+        "month": 7,
+        "value": 5.1
+      },
+      {
+        "label": "Aug 25",
+        "year": 2025,
+        "month": 8,
+        "value": 5.2
+      },
+      {
+        "label": "Sep 25",
+        "year": 2025,
+        "month": 9,
+        "value": 5.3
+      },
+      {
+        "label": "Nov 25",
+        "year": 2025,
+        "month": 11,
+        "value": 4.7
+      },
+      {
+        "label": "Dec 25",
+        "year": 2025,
+        "month": 12,
+        "value": 4.5
+      }
+    ],
+    "pr_unemployment": [
+      {
+        "label": "Jan 24",
+        "year": 2024,
+        "month": 1,
+        "value": 5.8
+      },
+      {
+        "label": "Feb 24",
+        "year": 2024,
+        "month": 2,
+        "value": 5.8
+      },
+      {
+        "label": "Mar 24",
+        "year": 2024,
+        "month": 3,
+        "value": 5.7
+      },
+      {
+        "label": "Apr 24",
+        "year": 2024,
+        "month": 4,
+        "value": 5.6
+      },
+      {
+        "label": "May 24",
+        "year": 2024,
+        "month": 5,
+        "value": 5.6
+      },
+      {
+        "label": "Jun 24",
+        "year": 2024,
+        "month": 6,
+        "value": 5.6
+      },
+      {
+        "label": "Jul 24",
+        "year": 2024,
+        "month": 7,
+        "value": 6.0
+      },
+      {
+        "label": "Aug 24",
+        "year": 2024,
+        "month": 8,
+        "value": 5.7
+      },
+      {
+        "label": "Sep 24",
+        "year": 2024,
+        "month": 9,
+        "value": 5.5
+      },
+      {
+        "label": "Oct 24",
+        "year": 2024,
+        "month": 10,
+        "value": 5.5
+      },
+      {
+        "label": "Nov 24",
+        "year": 2024,
+        "month": 11,
+        "value": 5.5
+      },
+      {
+        "label": "Dec 24",
+        "year": 2024,
+        "month": 12,
+        "value": 5.4
+      },
+      {
+        "label": "Jan 25",
+        "year": 2025,
+        "month": 1,
+        "value": 5.4
+      },
+      {
+        "label": "Feb 25",
+        "year": 2025,
+        "month": 2,
+        "value": 5.3
+      },
+      {
+        "label": "Mar 25",
+        "year": 2025,
+        "month": 3,
+        "value": 5.3
+      },
+      {
+        "label": "Apr 25",
+        "year": 2025,
+        "month": 4,
+        "value": 5.3
+      },
+      {
+        "label": "May 25",
+        "year": 2025,
+        "month": 5,
+        "value": 5.2
+      },
+      {
+        "label": "Jun 25",
+        "year": 2025,
+        "month": 6,
+        "value": 5.7
+      },
+      {
+        "label": "Jul 25",
+        "year": 2025,
+        "month": 7,
+        "value": 5.7
+      },
+      {
+        "label": "Aug 25",
+        "year": 2025,
+        "month": 8,
+        "value": 6.4
+      },
+      {
+        "label": "Sep 25",
+        "year": 2025,
+        "month": 9,
+        "value": 6.1
+      },
+      {
+        "label": "Oct 25",
+        "year": 2025,
+        "month": 10,
+        "value": 5.8
+      },
+      {
+        "label": "Nov 25",
+        "year": 2025,
+        "month": 11,
+        "value": 5.6
+      },
+      {
+        "label": "Dec 25",
+        "year": 2025,
+        "month": 12,
+        "value": 5.6
+      }
+    ],
+    "cpi": [
+      {
+        "label": "Jan 24",
+        "year": 2024,
+        "month": 1,
+        "value": 328.006
+      },
+      {
+        "label": "Feb 24",
+        "year": 2024,
+        "month": 2,
+        "value": 328.606
+      },
+      {
+        "label": "Mar 24",
+        "year": 2024,
+        "month": 3,
+        "value": 329.829
+      },
+      {
+        "label": "Apr 24",
+        "year": 2024,
+        "month": 4,
+        "value": 331.27
+      },
+      {
+        "label": "May 24",
+        "year": 2024,
+        "month": 5,
+        "value": 332.633
+      },
+      {
+        "label": "Jun 24",
+        "year": 2024,
+        "month": 6,
+        "value": 334.782
+      },
+      {
+        "label": "Jul 24",
+        "year": 2024,
+        "month": 7,
+        "value": 335.642
+      },
+      {
+        "label": "Aug 24",
+        "year": 2024,
+        "month": 8,
+        "value": 336.534
+      },
+      {
+        "label": "Sep 24",
+        "year": 2024,
+        "month": 9,
+        "value": 337.889
+      },
+      {
+        "label": "Oct 24",
+        "year": 2024,
+        "month": 10,
+        "value": 338.166
+      },
+      {
+        "label": "Nov 24",
+        "year": 2024,
+        "month": 11,
+        "value": 338.535
+      },
+      {
+        "label": "Dec 24",
+        "year": 2024,
+        "month": 12,
+        "value": 338.61
+      },
+      {
+        "label": "Jan 25",
+        "year": 2025,
+        "month": 1,
+        "value": 341.144
+      },
+      {
+        "label": "Feb 25",
+        "year": 2025,
+        "month": 2,
+        "value": 342.333
+      },
+      {
+        "label": "Mar 25",
+        "year": 2025,
+        "month": 3,
+        "value": 342.508
+      },
+      {
+        "label": "Apr 25",
+        "year": 2025,
+        "month": 4,
+        "value": 344.047
+      },
+      {
+        "label": "May 25",
+        "year": 2025,
+        "month": 5,
+        "value": 343.886
+      },
+      {
+        "label": "Jun 25",
+        "year": 2025,
+        "month": 6,
+        "value": 346.332
+      },
+      {
+        "label": "Jul 25",
+        "year": 2025,
+        "month": 7,
+        "value": 346.385
+      },
+      {
+        "label": "Aug 25",
+        "year": 2025,
+        "month": 8,
+        "value": 347.266
+      },
+      {
+        "label": "Sep 25",
+        "year": 2025,
+        "month": 9,
+        "value": 348.096
+      },
+      {
+        "label": "Nov 25",
+        "year": 2025,
+        "month": 11,
+        "value": 348.62
+      },
+      {
+        "label": "Dec 25",
+        "year": 2025,
+        "month": 12,
+        "value": 350.003
+      },
+      {
+        "label": "Jan 26",
+        "year": 2026,
+        "month": 1,
+        "value": 350.947
+      },
+      {
+        "label": "Feb 26",
+        "year": 2026,
+        "month": 2,
+        "value": 353.366
+      }
+    ]
+  },
+  "hud": {
+    "brooklyn": {
+      "studio": 1850,
+      "one_br": 2150,
+      "two_br": 2550,
+      "three_br": 3200,
+      "four_br": 3650,
+      "year": 2025
+    },
+    "dorado": {
+      "studio": 650,
+      "one_br": 750,
+      "two_br": 900,
+      "three_br": 1100,
+      "four_br": 1300,
+      "year": 2025
+    }
+  },
+  "walkscore": {
+    "lafayette": {
+      "walk_score": 86,
+      "walk_description": "Very Walkable",
+      "transit_score": 94,
+      "transit_description": "Rider's Paradise",
+      "bike_score": 84,
+      "bike_description": "Very Bikeable"
+    },
+    "puerto_rico": {
+      "walk_score": 81,
+      "walk_description": "Very Walkable",
+      "transit_score": null,
+      "transit_description": null,
+      "bike_score": null,
+      "bike_description": null
+    }
+  },
+  "census": {
+    "median_income": 67700,
+    "population": 22200,
+    "housing_units": 9000,
+    "median_home_value": 816000,
+    "source": "Census ACS 5-Year (2023)",
+    "area": "Brooklyn / Kings County Tracts"
+  },
+  "acris": {
+    "total": 46,
+    "types": {
+      "DEED": 15,
+      "MTGE": 12,
+      "AGMT": 10,
+      "RPTT": 9
+    }
+  },
+  "dob": {
+    "total": 500,
+    "types": {
+      "A2": 200,
+      "NB": 45,
+      "A1": 120,
+      "DM": 25,
+      "A3": 80,
+      "SI": 30
+    }
+  },
+  "complaints": {
+    "total": 500,
+    "types": {
+      "Noise - Residential": 95,
+      "HEAT/HOT WATER": 80,
+      "Illegal Parking": 65,
+      "Blocked Driveway": 55,
+      "Water System": 40,
+      "Rodent": 35,
+      "Dirty Conditions": 30,
+      "Street Condition": 25,
+      "Other": 75
+    }
+  }
+}
