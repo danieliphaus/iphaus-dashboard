@@ -141,8 +141,33 @@ tr:hover td { background:rgba(255,255,255,.02); }
 .zt-tip strong { color:var(--text); font-size:12px; display:block; margin-bottom:4px; }
 
 /* Zone badge in comps */
-.zone-badge { font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px;
+.zone-badge { font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; cursor:pointer;
   background:rgba(6,182,212,.12); color:var(--cyan); text-transform:uppercase; white-space:nowrap; }
+
+/* District Explainer Modal */
+.zone-modal-overlay { position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7);
+  z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.zone-modal { background:var(--card); border:1px solid var(--border-accent); border-radius:16px;
+  padding:28px; max-width:520px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.zone-modal h2 { font-size:20px; margin-bottom:4px; display:flex; align-items:center; gap:10px; }
+.zone-modal .zone-modal-desc { color:var(--text2); font-size:13px; margin:8px 0 16px; line-height:1.6; }
+.zone-modal .zone-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+.zone-modal .zone-stat { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+.zone-modal .zone-stat .zs-val { font-size:22px; font-weight:700; color:var(--cyan); }
+.zone-modal .zone-stat .zs-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+.zone-modal .zone-close { background:var(--blue); color:white; border:none; border-radius:8px; padding:8px 24px;
+  font-size:13px; font-weight:600; cursor:pointer; margin-top:12px; }
+.zone-modal .zone-close:hover { filter:brightness(1.1); }
+
+/* Compliance indicator in comps table */
+.far-pill { font-size:10px; font-weight:600; padding:2px 6px; border-radius:4px; display:inline-block; }
+.far-ok { background:rgba(16,185,129,0.15); color:var(--green); }
+.far-over { background:rgba(244,63,94,0.15); color:var(--rose); }
+.far-na { background:rgba(148,163,184,0.1); color:var(--text3); }
+
+/* Zoning fit filter */
+.fit-filter { display:flex; align-items:center; gap:6px; }
+.fit-filter label { font-size:11px; color:var(--text3); white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -200,6 +225,8 @@ class Dashboard {
     this.sortDir = "desc";
     this.searchTerm = "";
     this.zoneFilter = "All";
+    this.fitFilter = ""; // "would be legal in [zone]" filter
+    this.showCompliance = false; // show compliance columns in comps table
 
     // Hedonic scenario state
     this.scenario = {
@@ -424,22 +451,41 @@ class Dashboard {
     if (this.zoneFilter !== "All") {
       filtered = filtered.filter(c => Dashboard.getZone(c) === this.zoneFilter);
     }
+    // Zoning fit filter: only show comps that would be legal in target zone
+    if (this.fitFilter) {
+      filtered = filtered.filter(c => Dashboard.wouldBeLegal(c, this.fitFilter) !== false);
+    }
+
+    const allZones = [...new Set(comps.map(c=>Dashboard.getZone(c)))].filter(z=>z!=="—").sort();
+    const fitZones = Object.keys(Dashboard.DISTRICT_RULES).sort();
 
     const sec = document.getElementById("sec-comps");
     sec.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
         <div class="filters" id="boroFilters" style="margin-bottom:0;"></div>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <select class="sel" onchange="D.zoneFilter=this.value;D.renderComps();" style="font-size:12px;">
             <option value="All"${this.zoneFilter==="All"?" selected":""}>All Zones</option>
-            ${[...new Set(comps.map(c=>Dashboard.getZone(c)))].filter(z=>z!=="—").sort().map(z =>
+            ${allZones.map(z =>
               `<option value="${z}"${this.zoneFilter===z?" selected":""}>${z}</option>`
             ).join("")}
           </select>
+          <div class="fit-filter">
+            <label>Legal in:</label>
+            <select class="sel" onchange="D.fitFilter=this.value;D.renderComps();" style="font-size:12px;">
+              <option value=""${!this.fitFilter?" selected":""}>Any District</option>
+              ${fitZones.map(z =>
+                `<option value="${z}"${this.fitFilter===z?" selected":""}>${z}</option>`
+              ).join("")}
+            </select>
+          </div>
+          <label style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;cursor:pointer;">
+            <input type="checkbox" ${this.showCompliance?"checked":""} onchange="D.showCompliance=this.checked;D.renderComps();" style="accent-color:var(--cyan);"> FAR
+          </label>
           <input type="text" placeholder="Search address, neighborhood..." value="${this.searchTerm||""}"
             oninput="D.searchTerm=this.value;D.renderComps();"
-            style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:6px 12px;color:#f1f5f9;font-size:12px;font-family:inherit;width:220px;">
-          <button class="fbtn active" onclick="D.exportCSV()" style="white-space:nowrap;">⬇ Export CSV</button>
+            style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:6px 12px;color:#f1f5f9;font-size:12px;font-family:inherit;width:200px;">
+          <button class="fbtn active" onclick="D.exportCSV()" style="white-space:nowrap;">⬇ CSV</button>
         </div>
       </div>
       <div class="grid g2">
@@ -484,10 +530,25 @@ class Dashboard {
       {key:"interior_sf",label:"SF",fmt:"number"},{key:"price_per_sf",label:"$/SF",fmt:"currency"},
       {key:"bedrooms",label:"Bed"},{key:"bathrooms",label:"Bath"},{key:"year_built",label:"Year"}
     ];
+    // Add compliance columns when toggled
+    if (this.showCompliance) {
+      cols.push({key:"_lot",label:"Lot SF",fmt:"number"});
+      cols.push({key:"_far",label:"FAR"});
+      cols.push({key:"_farStatus",label:"Status"});
+    }
     let sorted = [...comps];
     if (this.sortCol) {
       sorted.sort((a,b) => {
-        const av = a[this.sortCol], bv = b[this.sortCol];
+        let av = a[this.sortCol], bv = b[this.sortCol];
+        // Handle virtual columns
+        if (this.sortCol === "_far") {
+          const pa = Dashboard.getPluto(a), pb = Dashboard.getPluto(b);
+          av = pa && pa.lot > 0 ? pa.bldg/pa.lot : 0;
+          bv = pb && pb.lot > 0 ? pb.bldg/pb.lot : 0;
+        } else if (this.sortCol === "_lot") {
+          const pa = Dashboard.getPluto(a), pb = Dashboard.getPluto(b);
+          av = pa ? pa.lot : 0; bv = pb ? pb.lot : 0;
+        }
         const cmp = av < bv ? -1 : av > bv ? 1 : 0;
         return this.sortDir === "asc" ? cmp : -cmp;
       });
@@ -499,19 +560,73 @@ class Dashboard {
     });
     html += '</tr></thead><tbody>';
     sorted.forEach(r => {
+      const cc = Dashboard.complianceCheck(r);
       html += '<tr>';
       cols.forEach(c => {
         let v = r[c.key];
         if (c.fmt === "currency") v = this.fmt(v);
         else if (c.fmt === "number") v = this.fmtN(v);
-        if (c.key === "_zone") v = `<span class="zone-badge">${Dashboard.getZone(r)}</span>`;
+        if (c.key === "_zone") {
+          const z = Dashboard.getZone(r);
+          const p = Dashboard.getPluto(r);
+          const src = p ? '(PLUTO)' : '(approx)';
+          v = `<span class="zone-badge" onclick="D.showZoneExplainer('${z.replace(/'/g,"\\'")}')" title="Click for details ${src}">${z}</span>`;
+        }
         else if (c.key === "borough") v = `<span class="badge" style="background:${this.boroughColor(r.borough)}22;color:${this.boroughColor(r.borough)}">${v}</span>`;
+        else if (c.key === "_lot") v = cc ? cc.lotArea.toLocaleString() : "—";
+        else if (c.key === "_far") v = cc ? cc.actualFAR : "—";
+        else if (c.key === "_farStatus") {
+          if (cc) {
+            v = `<span class="far-pill ${cc.farOk?"far-ok":"far-over"}">${cc.farPct}% ${cc.farOk?"OK":"OVER"}</span>`;
+          } else {
+            v = `<span class="far-pill far-na">N/A</span>`;
+          }
+        }
         html += `<td>${v}</td>`;
       });
       html += '</tr>';
     });
     html += '</tbody></table>';
     document.getElementById("compTable").innerHTML = html;
+  }
+
+  // Show district explainer modal
+  showZoneExplainer(zone) {
+    // Try exact match first, then strip overlay prefix
+    let info = Dashboard.districtExplainer(zone);
+    if (!info) {
+      // Try residential equivalent (e.g., M1-5/R9X -> R9X)
+      const parts = zone.split('/');
+      for (const p of parts) {
+        info = Dashboard.districtExplainer(p);
+        if (info) break;
+      }
+    }
+    if (!info) {
+      info = {zone, desc:"District rules not available for this zone.", far:"—", height:"—", base:"—", lotCov:"—", parking:"—"};
+    }
+    // Count comps in this zone
+    const compsInZone = this.data.comps.filter(c => Dashboard.getZone(c) === zone).length;
+
+    const overlay = document.createElement("div");
+    overlay.className = "zone-modal-overlay";
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+      <div class="zone-modal">
+        <h2><span class="zone-badge" style="font-size:14px;padding:4px 12px;">${zone}</span> District</h2>
+        <p class="zone-modal-desc">${Dashboard.termTip(info.desc)}</p>
+        <div class="zone-stats">
+          <div class="zone-stat"><div class="zs-val">${info.far}</div><div class="zs-label">Max FAR</div></div>
+          <div class="zone-stat"><div class="zs-val">${info.height || "None"}</div><div class="zs-label">Height (ft)</div></div>
+          <div class="zone-stat"><div class="zs-val">${info.lotCov}%</div><div class="zs-label">Lot Coverage</div></div>
+          <div class="zone-stat"><div class="zs-val">${info.base || "N/A"}</div><div class="zs-label">Base Height</div></div>
+          <div class="zone-stat"><div class="zs-val">${info.parking}</div><div class="zs-label">Parking/Unit</div></div>
+          <div class="zone-stat"><div class="zs-val">${compsInZone}</div><div class="zs-label">Comps</div></div>
+        </div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px;">Source: NYC Zoning Resolution · PLUTO v24.1</p>
+        <button class="zone-close" onclick="this.closest('.zone-modal-overlay').remove()">Close</button>
+      </div>`;
+    document.body.appendChild(overlay);
   }
 
   sortBy(col) {
@@ -1222,6 +1337,8 @@ class Dashboard {
         </div>
 
         ${this.renderCompliance()}
+
+        ${this.renderAllCompsCompliance()}
       </div>`;
 
     // Wire up events
@@ -1352,6 +1469,73 @@ class Dashboard {
         </div>
         <div style="padding:0 12px 8px;font-size:11px;color:var(--text3);">${c.detail}</div>`).join("")}
       </div>
+    </div>`;
+  }
+
+  // ── PER-COMP ZONING ANALYSIS ──
+  renderAllCompsCompliance() {
+    const comps = this.data.comps;
+    const rows = comps.map(c => {
+      const cc = Dashboard.complianceCheck(c);
+      const zone = Dashboard.getZone(c);
+      if (!cc) return {comp:c, zone, hasData:false};
+      return {comp:c, zone, hasData:true, ...cc};
+    });
+
+    const withData = rows.filter(r => r.hasData);
+    const okCount = withData.filter(r => r.farOk).length;
+    const overCount = withData.length - okCount;
+
+    const tableRows = rows.map(r => {
+      if (!r.hasData) {
+        return `<tr style="opacity:0.5;">
+          <td style="font-size:12px;">${r.comp.address}</td>
+          <td><span class="zone-badge" onclick="D.showZoneExplainer('${r.zone.replace(/'/g,"\\'")}')">${r.zone}</span></td>
+          <td colspan="4" style="font-size:11px;color:var(--text3);text-align:center;">No PLUTO data</td></tr>`;
+      }
+      const barW = Math.min(r.farPct, 150);
+      const barCol = r.farOk ? "var(--green)" : "var(--rose)";
+      return `<tr>
+        <td style="font-size:12px;">${r.comp.address}</td>
+        <td><span class="zone-badge" onclick="D.showZoneExplainer('${r.zone.replace(/'/g,"\\'")}')">${r.zone}</span></td>
+        <td style="text-align:right;font-weight:600;">${r.actualFAR}</td>
+        <td style="text-align:right;color:var(--text3);">${r.maxFAR}</td>
+        <td><div style="display:flex;align-items:center;gap:6px;">
+          <div class="comply-bar" style="width:100px;"><div class="comply-fill" style="width:${Math.min(barW,100)}%;background:${barCol};"></div></div>
+          <span class="far-pill ${r.farOk?"far-ok":"far-over"}">${r.farPct}%</span>
+        </div></td>
+        <td style="text-align:right;font-size:11px;color:var(--text3);">${r.lotArea.toLocaleString()} SF</td></tr>`;
+    }).join("");
+
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <h3 style="font-size:14px;margin-bottom:4px;">📊 Per-Comp Zoning Compliance — All 30 Properties</h3>
+          <p class="sub">Real zoning from NYC PLUTO dataset (26/30 matched). FAR utilization = actual building area / (lot area × max FAR).</p>
+        </div>
+        <div style="display:flex;gap:12px;font-size:13px;">
+          <span style="color:var(--green);font-weight:700;">${okCount} compliant</span>
+          <span style="color:var(--rose);font-weight:700;">${overCount} over FAR</span>
+          <span style="color:var(--text3);">${rows.length - withData.length} no data</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;overflow-x:auto;">
+        <table style="width:100%;font-size:12px;">
+          <thead><tr>
+            <th style="text-align:left;">Address</th>
+            <th>Zone</th>
+            <th style="text-align:right;">Actual FAR</th>
+            <th style="text-align:right;">Max FAR</th>
+            <th>Utilization</th>
+            <th style="text-align:right;">Lot Area</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+      <p style="font-size:11px;color:var(--text3);margin-top:12px;">
+        Source: NYC PLUTO v24.1 (MapPLUTO). FAR = Total Building Area / Lot Area. Properties showing >100% may have grandfathered or bonus density.
+        Click any zone badge for district details.
+      </p>
     </div>`;
   }
 }
@@ -1514,9 +1698,9 @@ Dashboard.ZONING_TERMS = [
 {"t":"Zoning Maps","d":"126 NYC zoning maps indicating district locations and boundaries. Each covers ~8,000 ft (N/S) × 12,500 ft (E/W). Amendments subject to ULURP.","l":false,"r":"","c":"Zoning Districts"}
 ];
 
-// Approximate zoning district by neighborhood (for comps that don't have zoning data)
+// Fallback: approximate zone by neighborhood (used only if PLUTO lookup misses)
 Dashboard.ZONE_MAP = {
-  "Brooklyn Heights":"R6A","Columbia Street Waterfront":"R6","DUMBO":"M1-2/R8A",
+  "Brooklyn Heights":"R6A","Columbia Street Waterfront":"R6A","DUMBO":"M1-2/R8A",
   "Downtown Brooklyn":"C6-4","Fort Greene":"R6A","Williamsburg":"R6A",
   "Chelsea":"R8A","Financial District":"C5-5","Gramercy":"R8B",
   "Hudson Square":"C6-2A","Midtown East":"C5-3","NoLita":"R7-2",
@@ -1524,17 +1708,70 @@ Dashboard.ZONE_MAP = {
   "Washington Heights":"R7A","West Village":"R6"
 };
 
-// District rules lookup
+// Real zoning data from NYC PLUTO (per-address, lot-level)
+Dashboard.PLUTO = {
+  "1 Main St, 8D":{zone:"C6-2A",rZone:"C6-2A",lot:27273,bldg:246100,floors:15},
+  "100 Jay St, 6G":{zone:"M1-5/R9-1",rZone:"R9-1",lot:31389,bldg:358551,floors:31},
+  "101 West 23rd St, 4A":{zone:"C6-3X",rZone:"C6-3X",lot:19738,bldg:94835,floors:6},
+  "110 Charlton St, 4C":{zone:"M1-6",rZone:"M1-6",lot:13683,bldg:208362,floors:27},
+  "150 Myrtle Ave, 18C":{zone:"C6-4",rZone:"C6-4",lot:21371,bldg:245678,floors:37},
+  "175 West 73rd St, 10C":{zone:"C2-7A",rZone:"C2-7A",lot:11524,bldg:120383,floors:15},
+  "189 Columbia St, 2A":{zone:"R6A",rZone:"R6A",lot:1890,bldg:2520,floors:3},
+  "200 Riverside Dr, 6F":{zone:"R10",rZone:"R10",lot:38278,bldg:544338,floors:46},
+  "210 Lafayette St, PH":{zone:"M1-5/R7D",rZone:"R7D",lot:11374,bldg:75705,floors:11},
+  "245 East 54th St, 12B":{zone:"C1-9",rZone:"C1-9",lot:22594,bldg:406179,floors:29},
+  "250 West 22nd St, 2A":{zone:"R8B",rZone:"R8B",lot:4962,bldg:19470,floors:5},
+  "305 West End Ave, 9A":{zone:"R10A",rZone:"R10A",lot:13825,bldg:184060,floors:14},
+  "33 East 74th St, 7D":{zone:"C5-1",rZone:"C5-1",lot:12620,bldg:64415,floors:7},
+  "360 Furman St, 8E":{zone:"M2-1",rZone:"M2-1",lot:128822,bldg:772621,floors:12},
+  "385 First Ave, 14A":{zone:"C1-9A",rZone:"C1-9A",lot:9875,bldg:114544,floors:20},
+  "40 Mercer St, 3A":{zone:"M1-5/R9X",rZone:"R9X",lot:21370,bldg:117024,floors:13},
+  "420 Kent Ave, PH1":{zone:"R7-3",rZone:"R7-3",lot:79918,bldg:543250,floors:22},
+  "428 West 23rd St, 3B":{zone:"R7B",rZone:"R7B",lot:1646,bldg:4528,floors:4},
+  "480 Park Ave, 12A":{zone:"C5-2.5",rZone:"C5-2.5",lot:25105,bldg:375239,floors:19.5},
+  "55 Berry St, 4B":{zone:"M1-2/R6A",rZone:"R6A",lot:15560,bldg:57062,floors:6},
+  "55 Water St, 5E":{zone:"M3-1",rZone:"M3-1",lot:80795,bldg:392162,floors:5},
+  "555 West 23rd St, 6D":{zone:"C6-3A",rZone:"C6-3A",lot:19750,bldg:265686,floors:14},
+  "700 Park Ave, 15C":{zone:"R10",rZone:"R10",lot:12562,bldg:173720,floors:20},
+  "720 Fort Washington Ave, 6D":{zone:"R7-2",rZone:"R7-2",lot:47275,bldg:0,floors:0},
+  "75 Wall St, 32A":{zone:"C5-5",rZone:"C5-5",lot:30794,bldg:542494,floors:36},
+  "90 Furman St, 11H":{zone:"M2-1",rZone:"M2-1",lot:92544,bldg:346796,floors:10},
+};
+
+// District rules lookup (expanded for PLUTO zones)
 Dashboard.DISTRICT_RULES = {
-  "R5": {far:1.25,height:40,base:null,lotCov:55,parking:1.0},
-  "R6": {far:2.43,height:70,base:55,lotCov:65,parking:0.5},
-  "R6A":{far:3.0,height:70,base:60,lotCov:70,parking:0.5},
-  "R6B":{far:2.0,height:50,base:40,lotCov:60,parking:0.5},
-  "R7A":{far:4.0,height:80,base:65,lotCov:65,parking:0.5},
-  "R7-1":{far:3.44,height:75,base:60,lotCov:65,parking:0.5},
-  "R7-2":{far:3.44,height:75,base:60,lotCov:65,parking:0.5},
-  "R8A":{far:6.02,height:120,base:85,lotCov:70,parking:0.4},
-  "R8B":{far:4.0,height:75,base:60,lotCov:70,parking:0.4},
+  "R5":   {far:1.25,height:40,base:null,lotCov:55,parking:1.0,desc:"Low-density residential. Detached/semi-detached houses, small lots."},
+  "R6":   {far:2.43,height:70,base:55,lotCov:65,parking:0.5,desc:"Medium-density residential. Elevator apartment buildings, wide streets."},
+  "R6A":  {far:3.0,height:70,base:60,lotCov:70,parking:0.5,desc:"Contextual medium-density. Quality Housing buildings with consistent streetwall."},
+  "R6B":  {far:2.0,height:50,base:40,lotCov:60,parking:0.5,desc:"Low-rise contextual. Brownstone-scale rowhouses and small apartments."},
+  "R7A":  {far:4.0,height:80,base:65,lotCov:65,parking:0.5,desc:"Contextual mid-rise. Quality Housing with higher streetwall, wider streets."},
+  "R7B":  {far:3.0,height:75,base:55,lotCov:65,parking:0.5,desc:"Mid-rise contextual. Moderate density with streetwall requirements."},
+  "R7-1": {far:3.44,height:75,base:60,lotCov:65,parking:0.5,desc:"Height-factor mid-rise. Open space or Quality Housing option."},
+  "R7-2": {far:3.44,height:75,base:60,lotCov:65,parking:0.5,desc:"Height-factor mid-rise. Similar to R7-1, mapped in upper Manhattan."},
+  "R7-3": {far:3.44,height:75,base:60,lotCov:65,parking:0.5,desc:"Height-factor mid-rise. Mapped in select Brooklyn waterfront areas."},
+  "R7D":  {far:4.2,height:100,base:65,lotCov:65,parking:0.5,desc:"Contextual mid-rise with inclusionary housing bonus."},
+  "R8A":  {far:6.02,height:120,base:85,lotCov:70,parking:0.4,desc:"Contextual high-density. Luxury apartments, doorman buildings."},
+  "R8B":  {far:4.0,height:75,base:60,lotCov:70,parking:0.4,desc:"Mid-rise contextual. Moderate high-density with streetwall limits."},
+  "R9-1": {far:7.52,height:135,base:95,lotCov:70,parking:0.4,desc:"High-density tower. Large residential towers in core areas."},
+  "R9X":  {far:9.0,height:175,base:120,lotCov:70,parking:0.4,desc:"Highest contextual density. Premium residential towers with inclusionary housing."},
+  "R10":  {far:10.0,height:210,base:125,lotCov:70,parking:0.4,desc:"Highest residential density. Park Ave/Riverside Drive luxury towers."},
+  "R10A": {far:10.0,height:185,base:150,lotCov:70,parking:0.4,desc:"Contextual tower-on-base. Large sites in high-density areas."},
+  "C1-9": {far:10.0,height:210,base:125,lotCov:70,parking:0.4,desc:"Local commercial overlay on R10. High-density residential with ground-floor retail."},
+  "C1-9A":{far:10.0,height:210,base:125,lotCov:70,parking:0.4,desc:"Commercial overlay on R10A. Contextual high-density with retail."},
+  "C2-7A":{far:4.0,height:80,base:65,lotCov:65,parking:0.5,desc:"Local commercial overlay on R7A equivalent. Mid-rise with retail."},
+  "C5-1": {far:10.0,height:null,base:null,lotCov:100,parking:0,desc:"Central commercial. High-density mixed-use, no height limit."},
+  "C5-2.5":{far:10.0,height:null,base:null,lotCov:100,parking:0,desc:"Central commercial. Very high density, no height limit."},
+  "C5-3": {far:10.0,height:null,base:null,lotCov:100,parking:0,desc:"Central commercial (Midtown core). No height limit."},
+  "C5-5": {far:15.0,height:null,base:null,lotCov:100,parking:0,desc:"Highest commercial density (Financial District). No height limit."},
+  "C6-2A":{far:6.0,height:120,base:85,lotCov:70,parking:0,desc:"General commercial. Mid-to-high density mixed-use."},
+  "C6-3A":{far:6.0,height:120,base:85,lotCov:70,parking:0,desc:"General commercial (West Chelsea). Mid-to-high density."},
+  "C6-3X":{far:6.0,height:120,base:85,lotCov:70,parking:0,desc:"General commercial with contextual controls."},
+  "C6-4": {far:10.0,height:null,base:null,lotCov:100,parking:0,desc:"High-density commercial. Towers permitted, no height limit."},
+  "M1-2": {far:2.0,height:null,base:null,lotCov:65,parking:0,desc:"Light manufacturing. Allows residential with MX overlay."},
+  "M1-5": {far:5.0,height:null,base:null,lotCov:65,parking:0,desc:"Light manufacturing (SoHo/NoHo). Loft buildings, JLWQA conversions."},
+  "M1-6": {far:10.0,height:null,base:null,lotCov:65,parking:0,desc:"Light manufacturing/commercial. Very high density, Hudson Square."},
+  "M2-1": {far:2.0,height:null,base:null,lotCov:65,parking:0,desc:"Medium manufacturing. Waterfront industrial/commercial."},
+  "M3-1": {far:2.0,height:null,base:null,lotCov:65,parking:0,desc:"Heavy manufacturing/waterfront. Industrial uses permitted."},
 };
 
 // Lafayette duplex specs
@@ -1573,9 +1810,72 @@ Dashboard.termTip = function(text) {
   return out;
 };
 
-// Helper: get zone for a comp
+// Helper: get zone for a comp (PLUTO-first, neighborhood fallback)
 Dashboard.getZone = function(comp) {
+  const p = Dashboard.PLUTO[comp.address];
+  if (p) return p.zone;
   return Dashboard.ZONE_MAP[comp.neighborhood] || "—";
+};
+
+// Helper: get PLUTO data for a comp
+Dashboard.getPluto = function(comp) {
+  return Dashboard.PLUTO[comp.address] || null;
+};
+
+// Helper: get the residential-equivalent zone (strips commercial overlays)
+Dashboard.getResZone = function(comp) {
+  const p = Dashboard.PLUTO[comp.address];
+  if (p) return p.rZone;
+  return Dashboard.ZONE_MAP[comp.neighborhood] || "—";
+};
+
+// Helper: compute FAR utilization for a comp
+Dashboard.complianceCheck = function(comp) {
+  const p = Dashboard.getPluto(comp);
+  const zone = Dashboard.getZone(comp);
+  const rZone = Dashboard.getResZone(comp);
+  const rules = Dashboard.DISTRICT_RULES[zone] || Dashboard.DISTRICT_RULES[rZone];
+  if (!rules || !p) return null;
+  const actualFAR = p.lot > 0 ? (p.bldg / p.lot) : 0;
+  const maxFAR = rules.far;
+  const farPct = maxFAR > 0 ? (actualFAR / maxFAR * 100) : 0;
+  return {
+    zone, rZone, rules, pluto: p,
+    actualFAR: actualFAR.toFixed(2),
+    maxFAR: maxFAR.toFixed(1),
+    farPct: Math.round(farPct),
+    farOk: actualFAR <= maxFAR,
+    heightOk: rules.height ? (p.floors * 10 <= rules.height) : true,
+    floors: p.floors,
+    maxHeight: rules.height,
+    lotArea: p.lot,
+    bldgArea: p.bldg,
+    source: "PLUTO"
+  };
+};
+
+// Helper: check if a comp would be legal in a target district
+Dashboard.wouldBeLegal = function(comp, targetZone) {
+  const p = Dashboard.getPluto(comp);
+  const rules = Dashboard.DISTRICT_RULES[targetZone];
+  if (!rules || !p || p.lot === 0) return null;
+  const actualFAR = p.bldg / p.lot;
+  return actualFAR <= rules.far;
+};
+
+// District explainer text
+Dashboard.districtExplainer = function(zone) {
+  const rules = Dashboard.DISTRICT_RULES[zone];
+  if (!rules) return null;
+  return {
+    zone,
+    desc: rules.desc || "",
+    far: rules.far,
+    height: rules.height,
+    base: rules.base,
+    lotCov: rules.lotCov,
+    parking: rules.parking
+  };
 };
 
 // ── BOOT ──
