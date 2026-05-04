@@ -105,6 +105,19 @@ tr:hover td { background:rgba(255,255,255,.02); }
 /* Footer */
 .footer { text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
 .footer p { font-size:11px; color:var(--text3); }
+
+/* Zoning */
+.zn-pill { padding:4px 10px; border-radius:16px; border:1px solid var(--border); background:transparent;
+  color:var(--text3); font-size:11px; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; white-space:nowrap; }
+.zn-pill:hover { border-color:var(--pill-c,var(--blue)); color:var(--pill-c,var(--blue)); }
+.zn-pill-active { background:var(--pill-c,var(--blue)); border-color:var(--pill-c,var(--blue)); color:#fff; }
+.zn-pill-active:hover { color:#fff; }
+.zn-cnt { display:inline-block; background:rgba(255,255,255,.15); border-radius:8px; padding:0 5px; margin-left:3px; font-size:10px; }
+.zn-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px; transition:all .2s; }
+.zn-card:hover { border-color:var(--blue); box-shadow:0 4px 12px rgba(59,130,246,.12); }
+.zn-def { font-size:12px; color:var(--text2); line-height:1.55; max-height:68px; overflow:hidden; }
+.zn-def-exp { max-height:none; }
+.zn-more { font-size:11px; color:var(--blue); cursor:pointer; background:none; border:none; font-family:inherit; font-weight:600; padding:0; }
 </style>
 </head>
 <body>
@@ -132,6 +145,7 @@ tr:hover td { background:rgba(255,255,255,.02); }
 <div class="section" id="sec-market"></div>
 <div class="section" id="sec-construction"></div>
 <div class="section" id="sec-estimate"></div>
+<div class="section" id="sec-zoning"></div>
 
 <!-- FOOTER -->
 <div class="footer">
@@ -193,7 +207,8 @@ class Dashboard {
     const tabs = [
       ["overview","Overview"],["comps","Comps Explorer"],
       ["model","Hedonic Model"],["market","Market Data"],
-      ["construction","Construction & Quality"],["estimate","Quick Estimate"]
+      ["construction","Construction & Quality"],["estimate","Quick Estimate"],
+      ["zoning","Zoning Reference"]
     ];
     const bar = document.getElementById("tabBar");
     tabs.forEach(([id,label]) => {
@@ -212,7 +227,8 @@ class Dashboard {
     document.querySelectorAll(".tab").forEach((el,i) => {
       el.classList.toggle("active", el.textContent === {
         overview:"Overview",comps:"Comps Explorer",model:"Hedonic Model",
-        market:"Market Data",construction:"Construction & Quality",estimate:"Quick Estimate"
+        market:"Market Data",construction:"Construction & Quality",estimate:"Quick Estimate",
+        zoning:"Zoning Reference"
       }[t]);
     });
     // Destroy old charts
@@ -270,6 +286,7 @@ class Dashboard {
       market: () => this.renderMarket(),
       construction: () => this.renderConstruction(),
       estimate: () => this.renderEstimate(),
+      zoning: () => this.renderZoning(),
     }[this.tab];
     if (fn) fn();
   }
@@ -988,7 +1005,287 @@ class Dashboard {
     if (score == null) return `<div class="wb"><div class="lbl">${label}</div><div class="score" style="color:var(--text3);">—</div></div>`;
     return `<div class="wb"><div class="lbl">${label}</div><div class="score" style="color:${color}">${score}</div><div class="desc">${desc||""}</div></div>`;
   }
+
+  // ══════════════════════════════════════════
+  // ZONING REFERENCE
+  // ══════════════════════════════════════════
+  renderZoning() {
+    const sec = document.getElementById("sec-zoning");
+    if (!this._zoningInited) {
+      this._zoningInited = true;
+      this._zoningCat = "all";
+      this._zoningLegal = false;
+      this._zoningQ = "";
+    }
+
+    const CAT_COLORS = {
+      "Bulk":"#3b82f6","Land Use":"#10b981","Special Districts":"#f59e0b",
+      "General":"#94a3b8","Process":"#8b5cf6","Use":"#ec4899",
+      "Zoning Districts":"#06b6d4","Housing":"#eab308"
+    };
+    const CATS = ["all","Land Use","Bulk","Special Districts","General","Process","Use","Zoning Districts","Housing"];
+    const CAT_COUNTS = {};
+    Dashboard.ZONING_TERMS.forEach(t => { CAT_COUNTS[t.c] = (CAT_COUNTS[t.c]||0)+1; });
+
+    const filtered = Dashboard.ZONING_TERMS.filter(t => {
+      if (this._zoningCat !== "all" && t.c !== this._zoningCat) return false;
+      if (this._zoningLegal && !t.l) return false;
+      if (this._zoningQ) {
+        const q = this._zoningQ.toLowerCase();
+        return t.t.toLowerCase().includes(q) || t.d.toLowerCase().includes(q) || (t.r&&t.r.toLowerCase().includes(q));
+      }
+      return true;
+    });
+
+    const pillHtml = CATS.map(c => {
+      const cnt = c==="all" ? Dashboard.ZONING_TERMS.length : (CAT_COUNTS[c]||0);
+      const active = c === this._zoningCat ? " zn-pill-active" : "";
+      const col = c==="all" ? "var(--blue)" : CAT_COLORS[c];
+      return `<button class="zn-pill${active}" data-cat="${c}" style="--pill-c:${col}">${c==="all"?"All":c} <span class="zn-cnt">${cnt}</span></button>`;
+    }).join("");
+
+    const cardsHtml = filtered.length === 0
+      ? `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">No terms match your search. Try a different keyword or clear filters.</div>`
+      : filtered.map((t,i) => {
+        const col = CAT_COLORS[t.c]||"#94a3b8";
+        const trunc = t.d.length > 180;
+        return `<div class="zn-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+            <span style="font-weight:700;font-size:13px;">${t.t}</span>
+            <div style="display:flex;gap:4px;flex-shrink:0;">
+              <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:${col}22;color:${col};text-transform:uppercase;">${t.c}</span>
+              ${t.l ? '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:#f43f5e22;color:#f43f5e;">LEGAL</span>' : ''}
+            </div>
+          </div>
+          <div class="zn-def${trunc ? '' : ' zn-def-exp'}" id="zndef${i}">${t.d}</div>
+          <div style="margin-top:6px;display:flex;justify-content:space-between;align-items:center;">
+            ${trunc ? `<button class="zn-more" onclick="const d=document.getElementById('zndef${i}');d.classList.toggle('zn-def-exp');this.textContent=d.classList.contains('zn-def-exp')?'Show less':'Show more'">Show more</button>` : '<span></span>'}
+            ${t.r ? `<span style="font-size:11px;color:var(--text3);font-style:italic;">See also: ${t.r}</span>` : ''}
+          </div>
+        </div>`;
+      }).join("");
+
+    // District rules table
+    const rules = [
+      ["Max FAR (Residential)","1.25","2.43","3.0","2.0","4.0","3.44"],
+      ["Max FAR (Community Facility)","1.25","4.8","3.0","2.0","4.0","3.44"],
+      ["Max Building Height","40 ft","70 ft","70 ft","50 ft","80 ft","75 ft"],
+      ["Max Base Height","—","55 ft","60 ft","40 ft","65 ft","60 ft"],
+      ["Front Setback","18 ft yard","10 ft","10 ft","5 ft","10 ft","10 ft"],
+      ["Rear Yard (min)","30 ft","30 ft","30 ft","30 ft","30 ft","30 ft"],
+      ["Max Lot Coverage","55%","65%","70%","60%","65%","65%"],
+      ["Quality Housing","N/A","Optional","Mandatory","Mandatory","Mandatory","Optional"],
+      ["Sky Exposure Plane","Yes","Yes","No (contextual)","No (contextual)","No (contextual)","Yes"],
+      ["Parking (per DU)","1/unit","0.5","0.5","0.5","0.5","0.5"]
+    ];
+    const dists = ["R5","R6","R6A","R6B","R7A","R7-1"];
+    const rulesHtml = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr><th style="text-align:left;padding:10px 8px;border-bottom:2px solid var(--border);color:var(--text3);font-size:11px;text-transform:uppercase;">Parameter</th>
+      ${dists.map(d => `<th style="text-align:center;padding:10px 8px;border-bottom:2px solid var(--border);color:var(--text3);font-size:11px;">${d}</th>`).join("")}</tr></thead>
+      <tbody>${rules.map(row => `<tr><td style="padding:8px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text);">${row[0]}</td>
+        ${row.slice(1).map((v,i) => {
+          const hi = (i>=4) ? "color:var(--green);font-weight:600;" : (i>=1&&i<=2) ? "background:rgba(59,130,246,0.06);" : "";
+          return `<td style="text-align:center;padding:8px;border-bottom:1px solid var(--border);${hi}">${v}</td>`;
+        }).join("")}</tr>`).join("")}</tbody></table>`;
+
+    sec.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card">
+          <h3 style="font-size:14px;margin-bottom:4px;">📖 NYC Zoning Glossary — 154 Terms</h3>
+          <p class="sub">Searchable & filterable. Source: NYC Department of City Planning Zoning Glossary.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;align-items:center;">
+            <input type="text" id="znSearch" placeholder="Search terms, definitions, or cross-references..."
+              value="${this._zoningQ.replace(/"/g,'&quot;')}"
+              style="flex:1;min-width:220px;padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;outline:none;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="znLegal" ${this._zoningLegal?"checked":""}
+                style="accent-color:var(--blue);width:14px;height:14px;">
+              Legal Definitions Only
+            </label>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;" id="znPills">${pillHtml}</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Showing ${filtered.length} of ${Dashboard.ZONING_TERMS.length} terms</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;max-height:560px;overflow-y:auto;padding-right:4px;" id="znGrid">${cardsHtml}</div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:14px;margin-bottom:4px;">🏗️ Lafayette District Rules — R5 through R7 Comparison</h3>
+          <p class="sub">Key zoning parameters for 722 Lafayette Ave (Bed-Stuy, Brooklyn). Quality Housing Program rules apply in R6–R7 contextual districts.</p>
+          <div style="margin-top:12px;overflow-x:auto;">${rulesHtml}</div>
+          <p style="font-size:11px;color:var(--text3);margin-top:12px;line-height:1.6;">
+            Note: Values shown are base regulations. Inclusionary Housing bonuses may increase FAR in designated areas.
+            Contextual districts (suffix A, B) set fixed height limits with no sky exposure plane.
+            The Lafayette project targets R6A–R7A parameters for its 4-duplex configuration.
+          </p>
+        </div>
+      </div>`;
+
+    // Wire up events
+    document.getElementById("znSearch").addEventListener("input", e => { this._zoningQ = e.target.value; this.renderZoning(); });
+    document.getElementById("znLegal").addEventListener("change", e => { this._zoningLegal = e.target.checked; this.renderZoning(); });
+    document.querySelectorAll(".zn-pill").forEach(p => {
+      p.addEventListener("click", () => { this._zoningCat = p.dataset.cat; this.renderZoning(); });
+    });
+  }
 }
+
+// ── ZONING TERMS DATA ──
+Dashboard.ZONING_TERMS = [
+{"t":"Accessory Use","d":"An accessory use is a use that is incidental to and customarily found in connection with the principal use. Must be conducted on the same zoning lot.","l":true,"r":"","c":"Use"},
+{"t":"Air Rights","d":"See: Development Rights","l":false,"r":"Development Rights","c":"General"},
+{"t":"Arts Bonus","d":"See: Incentive Zoning","l":false,"r":"Incentive Zoning","c":"General"},
+{"t":"As-of-right Development","d":"Complies with all applicable zoning regulations and does not require any discretionary action by the CPC or BSA.","l":false,"r":"","c":"General"},
+{"t":"Attached Building*","d":"See: Building","l":false,"r":"Building","c":"General"},
+{"t":"Attic Allowance","d":"An increase of up to 20% in the maximum FAR for the provision of a pitched roof. Available in R2X and all R3/R4 (except R4B) districts.","l":false,"r":"","c":"Bulk"},
+{"t":"Authorization","d":"A discretionary action by the CPC which modifies specified zoning requirements if certain findings have been met.","l":false,"r":"","c":"Process"},
+{"t":"Base Height","d":"The maximum permitted height of the front wall of a building before any required setback.","l":false,"r":"","c":"Bulk"},
+{"t":"Base Plane","d":"A horizontal plane from which building height is measured. Often at curb level; adjusted on sloping sites.","l":true,"r":"","c":"Bulk"},
+{"t":"Basement","d":"A building story with at least one-half of its floor-to-ceiling height above curb level. Included in floor area calculations (unlike a cellar).","l":true,"r":"","c":"General"},
+{"t":"Bioswale","d":"A landscape element designed to capture storm water run-off, containing vegetation and mulch to remove pollutants.","l":false,"r":"","c":"Land Use"},
+{"t":"Block","d":"A tract of land bounded on all sides by streets or a combination of streets, parks, railroad rights-of-way, pierhead lines or airport boundaries.","l":true,"r":"","c":"Land Use"},
+{"t":"Blockfront","d":"That portion of a block consisting of all zoning lots fronting on a single street.","l":false,"r":"","c":"Land Use"},
+{"t":"Board of Standards and Appeals (BSA)","d":"Five commissioners appointed by the Mayor who review and grant special permits and variances.","l":false,"r":"","c":"Process"},
+{"t":"Bonus","d":"See: Incentive Zoning","l":false,"r":"Incentive Zoning","c":"Special Districts"},
+{"t":"Building","d":"Includes semi-detached buildings (sharing a wall on a side lot line) and zero lot line buildings (freestanding, abutting one side lot line).","l":true,"r":"","c":"General"},
+{"t":"Building Envelope","d":"The maximum 3D space on a zoning lot within which a structure can be built, as permitted by height, setback and yard controls.","l":false,"r":"","c":"Bulk"},
+{"t":"Building Height","d":"Elevation measured from curb level or base plane to the roof (except for permitted obstructions like elevator bulkheads).","l":false,"r":"","c":"Bulk"},
+{"t":"Building Segment","d":"A portion of a building where each portion has dwelling units served by a separate entrance (e.g., a row of townhouses).","l":true,"r":"","c":"Bulk"},
+{"t":"Bulk","d":"The combination of controls (lot size, FAR, lot coverage, open space, yards, height and setback) determining maximum building size and placement.","l":false,"r":"","c":"Bulk"},
+{"t":"Bulkhead","d":"An enclosed rooftop structure for mechanical equipment, water tanks and roof access. Not counted as floor area.","l":false,"r":"","c":"Bulk"},
+{"t":"Bulkhead Line","d":"See: Waterfront Area","l":false,"r":"Waterfront Area","c":"Special Districts"},
+{"t":"Cellar","d":"A level with at least one-half of its floor-to-ceiling height below curb level. Not included in floor area calculations (unlike a basement).","l":false,"r":"","c":"General"},
+{"t":"Certification","d":"A non-discretionary CPC action informing DOB that an as-of-right development has complied with specific conditions. Also begins ULURP.","l":false,"r":"","c":"Process"},
+{"t":"City Environmental Quality Review (CEQR)","d":"Process identifying and assessing environmental impacts of discretionary actions by public or private applicants.","l":false,"r":"","c":"Process"},
+{"t":"City Map","d":"The official map of NYC showing legal streets, grades, parks, pierhead and bulkhead lines.","l":false,"r":"","c":"Process"},
+{"t":"City Planning Commission","d":"A 13-member panel responsible for planning the orderly growth of the city. Reviews and votes on land use applications.","l":false,"r":"","c":"Process"},
+{"t":"Commercial Building","d":"Any building occupied only by commercial uses (Use Groups 5–16).","l":true,"r":"","c":"General"},
+{"t":"Commercial District","d":"Designated by letter C (C1-2, C3, C4-7). Commercial uses allowed; residential and community facility uses may also be permitted.","l":true,"r":"","c":"Zoning Districts"},
+{"t":"Commercial Overlay","d":"A C1 or C2 district mapped within residential districts to serve local retail needs (grocery stores, dry cleaners, restaurants).","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Commercial Use","d":"Any retail, service or office use listed in Use Groups 5–16, or allowed by special permit.","l":false,"r":"","c":"Use"},
+{"t":"Community District (CD)","d":"NYC is organized into 59 community districts, each represented by a Community Board of volunteer members.","l":false,"r":"","c":"Process"},
+{"t":"Community Facility Building","d":"Any building occupied only by community facility uses.","l":false,"r":"","c":"General"},
+{"t":"Community Facility Use","d":"Provides educational, health, recreational, religious or other essential services (Use Groups 3 and 4).","l":false,"r":"","c":"Use"},
+{"t":"Contextual Zoning","d":"Regulates height, bulk, setback and width to produce buildings consistent with existing neighborhood character. Districts with A, B, D or X suffix.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Conversion","d":"A change of a building's use to another use.","l":false,"r":"","c":"Use"},
+{"t":"Court","d":"Any open area, other than a yard, unobstructed from lowest level to sky, bounded by building walls or building walls and lot lines.","l":false,"r":"","c":"Land Use"},
+{"t":"Curb Cut","d":"An angled cut in the curb permitting vehicular access from a street to a driveway, garage, parking lot or loading dock.","l":false,"r":"","c":"Land Use"},
+{"t":"Curb Level","d":"The mean level of the curb adjoining a zoning lot. Basis for building height and setback controls in medium/higher-density districts.","l":false,"r":"","c":"Land Use"},
+{"t":"Density","d":"The maximum number of dwelling units permitted on a zoning lot, based on district factors approximating average unit size.","l":false,"r":"","c":"Bulk"},
+{"t":"Detached Building*","d":"See: Building","l":false,"r":"Building","c":"General"},
+{"t":"Development","d":"Construction of a new building, relocation of an existing building, or establishment of a new open use on a tract of land.","l":false,"r":"","c":"General"},
+{"t":"Development Rights","d":"The maximum floor area permissible on a zoning lot. Unused development rights (built < max) are often called 'air rights.'","l":false,"r":"","c":"General"},
+{"t":"Discretionary Action","d":"Requires CPC or BSA review and approval. Includes zoning amendments, special permits, authorizations and variances.","l":false,"r":"","c":"Process"},
+{"t":"Docket","d":"DCP's official description of a proposed land-use action, incorporated in the Commission's resolution of approval.","l":false,"r":"","c":"Process"},
+{"t":"Dormer","d":"A permitted obstruction within a required setback area. In lower-density districts, a window protruding from a sloped roof.","l":false,"r":"","c":"Bulk"},
+{"t":"Dwelling Unit","d":"One or more rooms with lawful cooking and sanitary facilities, inhabited by persons maintaining a common household.","l":false,"r":"","c":"Housing"},
+{"t":"Enlargement","d":"A built addition to an existing building that increases its floor area.","l":false,"r":"","c":"General"},
+{"t":"Extension","d":"An expansion of the existing floor area occupied by an existing use.","l":false,"r":"","c":"General"},
+{"t":"Fence","d":"In residential districts: max 4 ft along front lot line, 6 ft along side or rear lot line. Generally permitted obstructions.","l":false,"r":"","c":"Land Use"},
+{"t":"Floor Area","d":"Sum of gross area of each floor, excluding mechanical space, cellar, open balconies, elevator/stair bulkheads, and most accessory parking below 23 ft.","l":false,"r":"","c":"Bulk"},
+{"t":"Floor Area Ratio (FAR)","d":"The principal bulk regulation controlling building size. FAR × lot area = maximum floor area. E.g., 10,000 sf × 1.0 FAR = 10,000 sf max.","l":false,"r":"","c":"Bulk"},
+{"t":"FRESH Food Store","d":"A full-line grocery store in underserved neighborhoods, established through zoning incentives promoting fresh food sales.","l":true,"r":"","c":"Use"},
+{"t":"Front Yard*","d":"See: Yard","l":false,"r":"Yard","c":"Land Use"},
+{"t":"Front Yard Line","d":"A line drawn parallel to the front lot line at the depth of a required front yard.","l":true,"r":"","c":"Land Use"},
+{"t":"Group Parking Facility","d":"A building, structure or lot used for parking that serves more than one dwelling unit.","l":false,"r":"","c":"General"},
+{"t":"Height Factor","d":"Total floor area ÷ lot coverage (in sf). Generally equals the number of stories in a building without setbacks.","l":false,"r":"","c":"Bulk"},
+{"t":"Height Factor Building","d":"Residential building whose bulk is determined by complementary height factors, FARs and open space ratios within a sky exposure plane. R6–R9 non-contextual.","l":false,"r":"","c":"Bulk"},
+{"t":"Home Occupation","d":"A business operated by dwelling unit occupants, accessory to residential use. Restricted to ≤25% of floor area (500 sf max).","l":false,"r":"","c":"Use"},
+{"t":"Incentive Zoning","d":"Provides a bonus (usually additional floor area) in exchange for public amenities or affordable housing.","l":false,"r":"","c":"Special Districts"},
+{"t":"Inclusionary Housing Program","d":"Optional floor area incentives for creating/preserving affordable housing. R10: up to 20% bonus. Designated areas: 33% bonus for 20% affordable.","l":false,"r":"","c":"Housing"},
+{"t":"Income-restricted Housing Unit","d":"A dwelling unit with legally binding income restriction at or below 80% of Area Median Income.","l":false,"r":"","c":"Housing"},
+{"t":"Infill Housing","d":"See: Predominantly Built-up Area","l":false,"r":"Predominantly Built-up Area","c":"General"},
+{"t":"Joint Living-Work Quarters for Artists","d":"Spaces in nonresidential buildings used for living quarters and work space by artists and their households.","l":true,"r":"","c":"Use"},
+{"t":"Large Scale Development","d":"A development involving several zoning lots planned as a unit. CPC discretionary action allows modifications to various regulations.","l":false,"r":"","c":"Special Districts"},
+{"t":"Limited Height District","d":"Superimposed on historic districts. Max heights: LH-1: 50 ft, LH-1A: 60 ft, LH-2: 70 ft, LH-3: 100 ft.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Loft","d":"A building/space designed for commercial or manufacturing use, generally pre-1930. May be converted to residential by CPC special permit.","l":false,"r":"","c":"General"},
+{"t":"Lot or Zoning Lot","d":"A tract of land comprising a single tax lot or two or more adjacent tax lots within a block. The basic unit for zoning regulations.","l":false,"r":"","c":"Land Use"},
+{"t":"Lot Area","d":"The area (in square feet) of a zoning lot.","l":false,"r":"","c":"Land Use"},
+{"t":"Lot Coverage","d":"The portion of a zoning lot covered by a building when viewed from above. Permitted obstructions not counted.","l":false,"r":"","c":"Bulk"},
+{"t":"Lot Depth","d":"The mean horizontal distance between front lot line and rear lot line.","l":false,"r":"","c":"Land Use"},
+{"t":"Lot Line or Zoning Lot Line","d":"A boundary of a zoning lot: front lot line (street line), rear lot line (parallel to street), and side lot line.","l":false,"r":"","c":"Land Use"},
+{"t":"Lot Width","d":"The mean horizontal distance between the side lot lines.","l":false,"r":"","c":"Land Use"},
+{"t":"Lower Density Growth Management Area","d":"Designated areas distant from mass transit with rapid growth. Requires more parking, larger yards and more open space.","l":false,"r":"","c":"Housing"},
+{"t":"Manhattan Core","d":"Southern tip of Manhattan to W 110th St (West Side) and E 96th St (East Side). Community Districts 1–8.","l":false,"r":"","c":"Special Districts"},
+{"t":"Manufacturing District","d":"Designated by letter M. Permits manufacturing, most commercial and some community facility uses. No residential except M1-D districts.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Manufacturing Use","d":"Any use listed in Use Group 17 or 18, or an industrial use only allowed by special permit.","l":false,"r":"","c":"Use"},
+{"t":"Mixed Building","d":"In a commercial district, used partly for residential and partly for community facility or commercial use. Max FAR is highest for any use.","l":true,"r":"","c":"General"},
+{"t":"Mixed Use District","d":"Special purpose district (MX) pairing M1 with a residential district. Residential and non-residential uses permitted as-of-right in same building.","l":true,"r":"","c":"Zoning Districts"},
+{"t":"Narrow Street*","d":"See: Street","l":false,"r":"Street","c":"Land Use"},
+{"t":"Non-complying","d":"A building that no longer complies with one or more bulk regulations. Degree of non-compliance may not be increased.","l":false,"r":"","c":"General"},
+{"t":"Non-conforming","d":"A use that no longer conforms to one or more use regulations. Degree of non-conformance may not be increased.","l":false,"r":"","c":"General"},
+{"t":"Open Space","d":"The part of a residential lot that is open and unobstructed from lowest level to sky, accessible to all dwelling unit occupants.","l":true,"r":"","c":"Bulk"},
+{"t":"Open Space Ratio (OSR)","d":"Required open space as a percentage of total floor area. E.g., 20,000 sf × 0.20 OSR = 4,000 sf required.","l":false,"r":"","c":"Bulk"},
+{"t":"Overlay District","d":"A district superimposed upon another, superseding, modifying or supplementing underlying regulations.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Paired Districts","d":"An M1 district matched with R3–R10 to permit mixed residential and non-residential uses. Mapped in Special Mixed Use Districts.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Parapet","d":"A low wall extending above the roof. Up to 4 ft is a permitted obstruction that may penetrate height limits.","l":false,"r":"","c":"Bulk"},
+{"t":"Parking Requirement Category (PRC)","d":"Nine categories grouping commercial parking requirements based on use compatibility and traffic generated.","l":false,"r":"","c":"General"},
+{"t":"Performance Standard","d":"Minimum/maximum limits on noise, vibration, smoke, odor for industrial uses (Use Groups 17–18).","l":false,"r":"","c":"Use"},
+{"t":"Perimeter Wall","d":"Outermost walls of a building in lower-density districts enclosing floor area, rising from base plane to specified max height.","l":false,"r":"","c":"Bulk"},
+{"t":"Permitted Obstruction","d":"A structure that may be in a required yard/open space or penetrate a height limit, setback or sky exposure plane.","l":false,"r":"","c":"Bulk"},
+{"t":"Pierhead Line","d":"See: Waterfront Area","l":false,"r":"Waterfront Area","c":"Special Districts"},
+{"t":"Planting Strips","d":"Grassy areas along curb edge for street trees. Required streetscape improvement in R1–R5 districts.","l":false,"r":"","c":"Land Use"},
+{"t":"Predominantly Built-up Area","d":"A blockfront in R4/R5 where optional regulations permit higher FARs and lower parking for infill housing.","l":false,"r":"","c":"Process"},
+{"t":"Private Road","d":"A right-of-way giving vehicular access to developments with 5+ dwelling units ≥50 ft from a public street (R1–R5).","l":false,"r":"","c":"Land Use"},
+{"t":"Privately-owned Public Space","d":"An amenity provided by the property owner for public use, usually in exchange for additional floor area.","l":false,"r":"","c":"Special Districts"},
+{"t":"Public Park","d":"Any publicly owned park, playground, beach, parkway or roadway under NYC Parks. Typically not subject to zoning.","l":false,"r":"","c":"Special Districts"},
+{"t":"Public Parking Garage","d":"A building used daily for public parking. May include some accessory off-street parking.","l":false,"r":"","c":"Special Districts"},
+{"t":"Public Parking Lot","d":"A tract of land used daily for public parking, not accessory to another use.","l":false,"r":"","c":"Special Districts"},
+{"t":"Public Plaza","d":"A privately owned open area adjacent to a building, accessible to the public. Floor area bonus available in certain districts.","l":false,"r":"","c":"Special Districts"},
+{"t":"Qualifying Ground Floor","d":"A ground floor where the second story starts ≥13 ft above sidewalk. Permits higher base and overall height in some districts.","l":false,"r":"","c":"Special Districts"},
+{"t":"Quality Housing Program","d":"Mandatory in contextual R6–R10; optional in non-contextual. Sets height limits, allows high lot coverage at/near street line.","l":false,"r":"","c":"Bulk"},
+{"t":"Railroad or Transit Air Space","d":"Space over an open railroad/transit right-of-way. Development only by CPC special permit.","l":false,"r":"","c":"Special Districts"},
+{"t":"Rear Yard*","d":"See: Yard","l":false,"r":"Yard","c":"Land Use"},
+{"t":"Rear Yard Equivalent","d":"See: Yard","l":false,"r":"Yard","c":"Land Use"},
+{"t":"Residence","d":"One or more dwelling/rooming units. Includes single-family, two-family, and multifamily (≥3 units) residences.","l":true,"r":"","c":"Housing"},
+{"t":"Residence District","d":"Designated by letter R. Only residences and community facilities are permitted.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Residential District Equivalent","d":"A residential designation assigned to C1–C6 districts for residential development. E.g., C4-4 = R7 equivalent.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Residential Use","d":"Any use in Use Group 1 (single-family detached) or Use Group 2 (all other residential).","l":false,"r":"","c":"Use"},
+{"t":"Restrictive Declaration","d":"A covenant running with the land binding present and future owners to implement land use approval conditions.","l":false,"r":"","c":"Process"},
+{"t":"Rezoning","d":"A change of zoning designation on the map. Subject to ULURP review.","l":false,"r":"","c":"Process"},
+{"t":"Semi-detached Building*","d":"See: Building","l":false,"r":"Building","c":"General"},
+{"t":"Setback, Building","d":"The portion set back above the base height before total height is achieved. Controlled by sky exposure planes or specified distances.","l":false,"r":"","c":"Bulk"},
+{"t":"Setbacks, Front Yard","d":"Front yards required in R1–R5; open area rules between front wall and street line apply in R6–R10.","l":false,"r":"","c":"Bulk"},
+{"t":"R4B, R5B and R5D","d":"Contextual residential districts with specific front yard and street wall regulations.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"R6B, R7B and R8B","d":"Contextual districts with street wall placement rules. On lots ≤50 ft wide, street wall must match adjacent buildings.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Shore Public Walkway*","d":"See: Waterfront Public Access Area","l":false,"r":"Waterfront Public Access Area","c":"Special Districts"},
+{"t":"Shoreline","d":"See: Waterfront Area","l":false,"r":"Waterfront Area","c":"Special Districts"},
+{"t":"Side Lot Ribbon","d":"An 8–10 ft strip along the side lot line. In R3–R5, if lot < 35 ft wide, parking must be here.","l":false,"r":"","c":"Land Use"},
+{"t":"Side Yard*","d":"See: Yard","l":false,"r":"Yard","c":"Land Use"},
+{"t":"Sidewalk Cafe","d":"A portion of an eating/drinking establishment on a public sidewalk. Types: enclosed, unenclosed, small.","l":false,"r":"","c":"Use"},
+{"t":"Sign","d":"Writing, pictures or symbols on or attached to a building. Types: accessory, advertising, flashing, illuminated.","l":false,"r":"","c":"Use"},
+{"t":"Sketch Maps","d":"Illustration of a proposed Zoning/City Map change attached to the Notice of Certification for public review.","l":false,"r":"","c":"Process"},
+{"t":"Sky Exposure Plane","d":"A virtual sloping plane beginning at a specified height above the street line, rising inward over the lot. Buildings may not penetrate it.","l":false,"r":"","c":"Bulk"},
+{"t":"Sliver Building","d":"A tall building ≤45 ft wide in R7-2 through R10. Generally restricted to height equal to street width or 100 ft.","l":false,"r":"","c":"Bulk"},
+{"t":"Special Permit","d":"A discretionary CPC (ULURP) or BSA action that may modify use, bulk or parking regulations if specified conditions are met.","l":false,"r":"","c":"Process"},
+{"t":"Special Purpose District","d":"Regulations supplementing underlying zoning for distinctive neighborhoods. Shown as overlays on zoning maps.","l":false,"r":"","c":"Special Districts"},
+{"t":"Split Lot","d":"A zoning lot in two or more districts. The 25 ft rule: if one district ≤25 ft wide, the larger district's regulations apply.","l":false,"r":"","c":"Land Use"},
+{"t":"Story","d":"Part of a building between one floor surface and the ceiling above. A cellar does not count.","l":false,"r":"","c":"Bulk"},
+{"t":"Street","d":"Any road on the City Map, or a way ≥50 ft wide for public use. Narrow: < 75 ft. Wide: ≥ 75 ft.","l":false,"r":"","c":"Land Use"},
+{"t":"Street Line","d":"A front lot line separating the zoning lot from the street.","l":true,"r":"","c":"Land Use"},
+{"t":"Street Wall","d":"A wall or portion of a wall of a building facing a street.","l":false,"r":"","c":"Land Use"},
+{"t":"Supplemental Public Access Area*","d":"See: Waterfront Public Access Area","l":false,"r":"Waterfront Public Access Area","c":"Special Districts"},
+{"t":"Tax Lot","d":"A parcel identified with a unique borough, block and lot number for property tax purposes.","l":false,"r":"","c":"Land Use"},
+{"t":"Tower","d":"A portion of a building penetrating the sky exposure plane. Standard: ≤40% lot coverage. Tower-on-a-base: 60–85 ft contextual base required.","l":false,"r":"","c":"Bulk"},
+{"t":"Transfer of Development Rights","d":"See: Development Rights","l":false,"r":"Development Rights","c":"Special Districts"},
+{"t":"Transit Zone","d":"Area with lower parking requirements for affordable housing, generally within ½ mile of a subway station.","l":false,"r":"","c":"Special Districts"},
+{"t":"ULURP","d":"The Uniform Land Use Review Procedure — the public review process for all proposed zoning map amendments, special permits and other actions.","l":false,"r":"","c":"Process"},
+{"t":"Upland Connection*","d":"See: Waterfront Public Access Area","l":false,"r":"Waterfront Public Access Area","c":"Special Districts"},
+{"t":"Use","d":"Any activity, occupation, business or operation listed in Use Groups 1–18, or identified in a special permit.","l":false,"r":"","c":"Use"},
+{"t":"Use Group","d":"18 groups categorizing uses: residential (1–2), community facility (3–4), retail/service (5–9), regional commercial (10–12), waterfront (13–15), auto (16), industrial (17–18).","l":false,"r":"","c":"Use"},
+{"t":"Variance","d":"A discretionary BSA action granting relief from use and bulk provisions when unique lot conditions cause practical difficulty.","l":false,"r":"","c":"Process"},
+{"t":"Waterfront Access Plan (WAP)","d":"A framework in the Zoning Resolution tailoring waterfront bulk and public access requirements to specific conditions.","l":false,"r":"","c":"Special Districts"},
+{"t":"Waterfront Area","d":"Area adjacent to a body of water ≥100 ft wide, comprising blocks between pierhead line and 800 ft landward from shoreline.","l":false,"r":"","c":"Special Districts"},
+{"t":"Waterfront Public Access Area","d":"The portion of a waterfront zoning lot where publicly accessible open space is provided along the shoreline.","l":true,"r":"","c":"Special Districts"},
+{"t":"Waterfront Yard","d":"Portion of a waterfront lot extending along the shoreline, open from lowest level to sky. Min depth typically 30–40 ft.","l":true,"r":"","c":"Special Districts"},
+{"t":"Wide Street*","d":"See: Street","l":false,"r":"Street","c":"Land Use"},
+{"t":"Window, Legally Required","d":"Mandated in dwelling units for light, air and ventilation. Cannot be on or closer than 30 ft to a lot line.","l":true,"r":"","c":"Special Districts"},
+{"t":"Yard","d":"A required open area along lot lines, unobstructed from lowest level to sky. Front: full width of front lot line. Rear: min 30 ft (res) / 20 ft (comm). Side: between front and rear yards.","l":false,"r":"","c":"Land Use"},
+{"t":"Zero Lot Line Building*","d":"See: Building","l":false,"r":"Building","c":"Land Use"},
+{"t":"Zoning District","d":"A residential, commercial or manufacturing area within which zoning regulations govern land use and building bulk.","l":false,"r":"","c":"Zoning Districts"},
+{"t":"Zoning Lot*","d":"See: Lot","l":false,"r":"Lot","c":"Land Use"},
+{"t":"Zoning Lot Merger","d":"See: Development Rights","l":false,"r":"Development Rights","c":"Land Use"},
+{"t":"Zoning Maps","d":"126 NYC zoning maps indicating district locations and boundaries. Each covers ~8,000 ft (N/S) × 12,500 ft (E/W). Amendments subject to ULURP.","l":false,"r":"","c":"Zoning Districts"}
+];
 
 // ── BOOT ──
 const D = new Dashboard(RAW);
