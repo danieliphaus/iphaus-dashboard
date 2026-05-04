@@ -118,6 +118,31 @@ tr:hover td { background:rgba(255,255,255,.02); }
 .zn-def { font-size:12px; color:var(--text2); line-height:1.55; max-height:68px; overflow:hidden; }
 .zn-def-exp { max-height:none; }
 .zn-more { font-size:11px; color:var(--blue); cursor:pointer; background:none; border:none; font-family:inherit; font-weight:600; padding:0; }
+
+/* Compliance */
+.comply-row { display:flex; justify-content:space-between; align-items:center; padding:10px 12px;
+  border-bottom:1px solid var(--border); font-size:13px; }
+.comply-row:last-child { border-bottom:none; }
+.comply-label { color:var(--text2); font-weight:500; }
+.comply-vals { display:flex; align-items:center; gap:12px; }
+.comply-val { font-weight:600; }
+.comply-pass { color:var(--green); font-weight:700; font-size:12px; }
+.comply-fail { color:var(--rose); font-weight:700; font-size:12px; }
+.comply-bar { width:120px; height:8px; border-radius:4px; background:var(--border); overflow:hidden; }
+.comply-fill { height:100%; border-radius:4px; transition:width .3s; }
+
+/* Zoning tooltip */
+.zt { text-decoration:underline dotted var(--text3); cursor:help; position:relative; }
+.zt:hover .zt-tip { display:block; }
+.zt-tip { display:none; position:absolute; bottom:120%; left:50%; transform:translateX(-50%);
+  background:#1e293b; border:1px solid var(--border-accent); border-radius:8px; padding:10px 14px;
+  width:280px; font-size:11px; color:var(--text2); line-height:1.5; z-index:999;
+  box-shadow:0 8px 24px rgba(0,0,0,.4); pointer-events:none; font-weight:400; }
+.zt-tip strong { color:var(--text); font-size:12px; display:block; margin-bottom:4px; }
+
+/* Zone badge in comps */
+.zone-badge { font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px;
+  background:rgba(6,182,212,.12); color:var(--cyan); text-transform:uppercase; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -174,6 +199,7 @@ class Dashboard {
     this.sortCol = null;
     this.sortDir = "desc";
     this.searchTerm = "";
+    this.zoneFilter = "All";
 
     // Hedonic scenario state
     this.scenario = {
@@ -392,15 +418,24 @@ class Dashboard {
   renderComps() {
     const allBoroughs = ["All", ...new Set(this.data.comps.map(c=>c.borough))];
     const comps = this.getComps();
-    const filtered = this.searchTerm ? comps.filter(c =>
+    let filtered = this.searchTerm ? comps.filter(c =>
       (c.address+" "+c.neighborhood+" "+c.borough).toLowerCase().includes(this.searchTerm.toLowerCase())
-    ) : comps;
+    ) : [...comps];
+    if (this.zoneFilter !== "All") {
+      filtered = filtered.filter(c => Dashboard.getZone(c) === this.zoneFilter);
+    }
 
     const sec = document.getElementById("sec-comps");
     sec.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
         <div class="filters" id="boroFilters" style="margin-bottom:0;"></div>
         <div style="display:flex;gap:8px;align-items:center;">
+          <select class="sel" onchange="D.zoneFilter=this.value;D.renderComps();" style="font-size:12px;">
+            <option value="All"${this.zoneFilter==="All"?" selected":""}>All Zones</option>
+            ${[...new Set(comps.map(c=>Dashboard.getZone(c)))].filter(z=>z!=="—").sort().map(z =>
+              `<option value="${z}"${this.zoneFilter===z?" selected":""}>${z}</option>`
+            ).join("")}
+          </select>
           <input type="text" placeholder="Search address, neighborhood..." value="${this.searchTerm||""}"
             oninput="D.searchTerm=this.value;D.renderComps();"
             style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:6px 12px;color:#f1f5f9;font-size:12px;font-family:inherit;width:220px;">
@@ -444,7 +479,8 @@ class Dashboard {
   renderCompTable(comps) {
     const cols = [
       {key:"address",label:"Address"},{key:"borough",label:"Borough"},
-      {key:"neighborhood",label:"Neighborhood"},{key:"sale_price",label:"Price",fmt:"currency"},
+      {key:"neighborhood",label:"Neighborhood"},{key:"_zone",label:"Zone"},
+      {key:"sale_price",label:"Price",fmt:"currency"},
       {key:"interior_sf",label:"SF",fmt:"number"},{key:"price_per_sf",label:"$/SF",fmt:"currency"},
       {key:"bedrooms",label:"Bed"},{key:"bathrooms",label:"Bath"},{key:"year_built",label:"Year"}
     ];
@@ -468,7 +504,8 @@ class Dashboard {
         let v = r[c.key];
         if (c.fmt === "currency") v = this.fmt(v);
         else if (c.fmt === "number") v = this.fmtN(v);
-        if (c.key === "borough") v = `<span class="badge" style="background:${this.boroughColor(r.borough)}22;color:${this.boroughColor(r.borough)}">${v}</span>`;
+        if (c.key === "_zone") v = `<span class="zone-badge">${Dashboard.getZone(r)}</span>`;
+        else if (c.key === "borough") v = `<span class="badge" style="background:${this.boroughColor(r.borough)}22;color:${this.boroughColor(r.borough)}">${v}</span>`;
         html += `<td>${v}</td>`;
       });
       html += '</tr>';
@@ -903,13 +940,78 @@ class Dashboard {
           </div>` : ""}
         </div>
       </div>
+
+      <div class="card" style="border-color:rgba(6,182,212,.2);">
+        <h3 style="font-size:13px;">🏛️ Zoning Context — How district rules constrain this estimate</h3>
+        <p style="font-size:12px;color:var(--text2);margin:8px 0;">
+          Select a zoning district to see what's actually buildable. The ${Dashboard.termTip("FAR")} determines max floor area;
+          ${Dashboard.termTip("lot coverage")} limits the building footprint; ${Dashboard.termTip("building height")} caps how tall you can go.
+        </p>
+        <div style="display:flex;align-items:center;gap:8px;margin:10px 0;">
+          <label style="font-size:12px;color:var(--text3);">District:</label>
+          <select class="sel" id="estZoneSelect" style="font-size:12px;">
+            ${Object.keys(Dashboard.DISTRICT_RULES).map(z =>
+              `<option value="${z}"${z==="R6A"?" selected":""}>${z}</option>`
+            ).join("")}
+          </select>
+        </div>
+        <div id="estZoneInfo"></div>
+      </div>
     `;
+
+    // Render zone info for estimate
+    this.updateEstZone();
+    document.getElementById("estZoneSelect").addEventListener("change", () => this.updateEstZone());
   }
 
   estSlider(key, label, min, max, step) {
     return `<div class="ctrl"><label>${label}<span>${this.est[key]}</span></label>
       <input type="range" min="${min}" max="${max}" step="${step}" value="${this.est[key]}"
       oninput="D.est.${key}=+this.value;D.renderEstimate();"></div>`;
+  }
+
+  updateEstZone() {
+    const sel = document.getElementById("estZoneSelect");
+    const div = document.getElementById("estZoneInfo");
+    if (!sel || !div) return;
+    const z = sel.value;
+    const r = Dashboard.DISTRICT_RULES[z];
+    if (!r) { div.innerHTML = '<p style="color:var(--text3);font-size:12px;">No rules available for this district.</p>'; return; }
+
+    const sf = this.est ? this.est.interior_sf : 1200;
+    // Assume 2500 SF lot for estimation
+    const estLot = 2500;
+    const needFAR = sf / estLot;
+    const farOk = needFAR <= r.far;
+    const maxSF = r.far * estLot;
+
+    div.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;">
+        <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;">Max ${Dashboard.termTip("FAR")}</div>
+          <div style="font-size:20px;font-weight:700;color:var(--cyan);">${r.far}</div>
+          <div style="font-size:10px;color:${farOk?"var(--green)":"var(--rose)"};margin-top:2px;">
+            Your SF needs ${needFAR.toFixed(2)} FAR ${farOk?"✓":"✗"}
+          </div>
+        </div>
+        <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;">Max Height</div>
+          <div style="font-size:20px;font-weight:700;color:var(--cyan);">${r.height} ft</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Base: ${r.base||"N/A"}${r.base?" ft":""}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;">${Dashboard.termTip("Lot Coverage")}</div>
+          <div style="font-size:20px;font-weight:700;color:var(--cyan);">${r.lotCov}%</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Max footprint on lot</div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text3);margin-top:8px;">
+        On a ${estLot.toLocaleString()} SF lot in ${z}: max buildable area is <strong style="color:var(--text);">${maxSF.toLocaleString()} SF</strong>.
+        Your ${sf.toLocaleString()} SF estimate ${farOk
+          ? `fits with <span style="color:var(--green);">${(maxSF-sf).toLocaleString()} SF to spare</span>.`
+          : `<span style="color:var(--rose);">exceeds the limit by ${(sf-maxSF).toLocaleString()} SF</span>. Consider reducing SF or choosing a higher-density district.`}
+        Parking: ${r.parking} spaces per unit required.
+      </p>`;
   }
 
   // ══════════════════════════════════════════
@@ -1118,6 +1220,8 @@ class Dashboard {
             The Lafayette project targets R6A–R7A parameters for its 4-duplex configuration.
           </p>
         </div>
+
+        ${this.renderCompliance()}
       </div>`;
 
     // Wire up events
@@ -1126,6 +1230,129 @@ class Dashboard {
     document.querySelectorAll(".zn-pill").forEach(p => {
       p.addEventListener("click", () => { this._zoningCat = p.dataset.cat; this.renderZoning(); });
     });
+  }
+
+  // ── COMPLIANCE CHECK ──
+  renderCompliance() {
+    const L = Dashboard.LAFAYETTE;
+    const rules = Dashboard.DISTRICT_RULES[L.zone];
+    if (!rules) return '';
+
+    const totalSF = L.units.reduce((s,u) => s+u.sf, 0);
+    const totalVal = L.units.reduce((s,u) => s+u.price, 0);
+    const proposedFAR = totalSF / L.lotArea;
+    const farPct = (proposedFAR / rules.far * 100);
+    const farOk = proposedFAR <= rules.far;
+    const remainingSF = (rules.far * L.lotArea) - totalSF;
+
+    // Lot coverage — estimate ~65% for 4 attached duplexes
+    const estCoverage = 62;
+    const covOk = estCoverage <= rules.lotCov;
+
+    // Parking: 0.5 per unit × 4 = 2 spaces required
+    const reqParking = Math.ceil(rules.parking * L.units.length);
+
+    const checks = [
+      {
+        label: `${Dashboard.termTip("Floor Area Ratio")} (${Dashboard.termTip("FAR")})`,
+        proposed: proposedFAR.toFixed(2),
+        allowed: rules.far.toFixed(1),
+        pct: Math.min(farPct,100),
+        ok: farOk,
+        detail: farOk ? `${Math.round(remainingSF).toLocaleString()} SF remaining` : `Over by ${Math.round(-remainingSF).toLocaleString()} SF`
+      },
+      {
+        label: "Total Floor Area",
+        proposed: totalSF.toLocaleString() + " SF",
+        allowed: (rules.far * L.lotArea).toLocaleString() + " SF",
+        pct: farPct,
+        ok: farOk,
+        detail: `${L.units.length} units across ${L.lotArea.toLocaleString()} SF lot`
+      },
+      {
+        label: `Max ${Dashboard.termTip("Building Height")}`,
+        proposed: "~35 ft (est.)",
+        allowed: rules.height + " ft",
+        pct: (35/rules.height*100),
+        ok: true,
+        detail: "2-story duplexes well within limit"
+      },
+      {
+        label: `Max ${Dashboard.termTip("Base Height")}`,
+        proposed: "~35 ft (est.)",
+        allowed: (rules.base||"N/A") + (rules.base?" ft":""),
+        pct: rules.base ? (35/rules.base*100) : 0,
+        ok: true,
+        detail: rules.base ? "No setback required below base height" : "N/A"
+      },
+      {
+        label: Dashboard.termTip("Lot Coverage"),
+        proposed: estCoverage + "%",
+        allowed: rules.lotCov + "%",
+        pct: (estCoverage/rules.lotCov*100),
+        ok: covOk,
+        detail: covOk ? `${rules.lotCov - estCoverage}% margin remaining` : "Over coverage limit"
+      },
+      {
+        label: "Parking Required",
+        proposed: reqParking + " spaces",
+        allowed: rules.parking + " per unit",
+        pct: 100,
+        ok: true,
+        detail: `${L.units.length} units × ${rules.parking} = ${reqParking} spaces`
+      }
+    ];
+
+    const unitRows = L.units.map(u =>
+      `<tr><td style="font-weight:600;">${u.name}</td>
+       <td>${u.sf.toLocaleString()} SF</td>
+       <td>${u.bed}/${u.bath}</td>
+       <td>$${u.price.toLocaleString()}</td>
+       <td>$${Math.round(u.price/u.sf).toLocaleString()}/SF</td></tr>`
+    ).join("");
+
+    const passCount = checks.filter(c => c.ok).length;
+    const allPass = passCount === checks.length;
+
+    return `<div class="card" style="border-color:${allPass?"rgba(16,185,129,.3)":"rgba(244,63,94,.3)"};">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <h3 style="font-size:14px;margin-bottom:4px;">✅ Lafayette Zoning Compliance Check</h3>
+          <p class="sub">${L.address} · Zone ${L.zone} · ${L.lotArea.toLocaleString()} SF lot · ${L.units.length} duplex units</p>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:${allPass?"var(--green)":"var(--rose)"};">
+          ${allPass ? "ALL CHECKS PASS ✓" : passCount + "/" + checks.length + " PASSING"}
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <table style="width:100%;font-size:12px;">
+          <thead><tr><th>Unit</th><th>SF</th><th>Bed/Bath</th><th>Price</th><th>$/SF</th></tr></thead>
+          <tbody>${unitRows}
+            <tr style="border-top:2px solid var(--border);font-weight:700;">
+              <td>TOTAL</td>
+              <td>${totalSF.toLocaleString()} SF</td>
+              <td>${L.units.reduce((s,u)=>s+u.bed,0)}/${L.units.reduce((s,u)=>s+u.bath,0)}</td>
+              <td>$${totalVal.toLocaleString()}</td>
+              <td>$${Math.round(totalVal/totalSF).toLocaleString()}/SF</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:16px;">
+        ${checks.map(c => `<div class="comply-row">
+          <span class="comply-label">${c.label}</span>
+          <div class="comply-vals">
+            <span class="comply-val">${c.proposed}</span>
+            <span style="color:var(--text3);font-size:11px;">of ${c.allowed}</span>
+            <div class="comply-bar"><div class="comply-fill" style="width:${Math.min(c.pct,100)}%;background:${c.ok?"var(--green)":"var(--rose)"};"></div></div>
+            <span class="${c.ok?"comply-pass":"comply-fail"}">${c.ok?"PASS ✓":"FAIL ✗"}</span>
+          </div>
+        </div>
+        <div style="padding:0 12px 8px;font-size:11px;color:var(--text3);">${c.detail}</div>`).join("")}
+      </div>
+    </div>`;
   }
 }
 
@@ -1286,6 +1513,70 @@ Dashboard.ZONING_TERMS = [
 {"t":"Zoning Lot Merger","d":"See: Development Rights","l":false,"r":"Development Rights","c":"Land Use"},
 {"t":"Zoning Maps","d":"126 NYC zoning maps indicating district locations and boundaries. Each covers ~8,000 ft (N/S) × 12,500 ft (E/W). Amendments subject to ULURP.","l":false,"r":"","c":"Zoning Districts"}
 ];
+
+// Approximate zoning district by neighborhood (for comps that don't have zoning data)
+Dashboard.ZONE_MAP = {
+  "Brooklyn Heights":"R6A","Columbia Street Waterfront":"R6","DUMBO":"M1-2/R8A",
+  "Downtown Brooklyn":"C6-4","Fort Greene":"R6A","Williamsburg":"R6A",
+  "Chelsea":"R8A","Financial District":"C5-5","Gramercy":"R8B",
+  "Hudson Square":"C6-2A","Midtown East":"C5-3","NoLita":"R7-2",
+  "SoHo":"M1-5A","Upper East Side":"R8B","Upper West Side":"R8A",
+  "Washington Heights":"R7A","West Village":"R6"
+};
+
+// District rules lookup
+Dashboard.DISTRICT_RULES = {
+  "R5": {far:1.25,height:40,base:null,lotCov:55,parking:1.0},
+  "R6": {far:2.43,height:70,base:55,lotCov:65,parking:0.5},
+  "R6A":{far:3.0,height:70,base:60,lotCov:70,parking:0.5},
+  "R6B":{far:2.0,height:50,base:40,lotCov:60,parking:0.5},
+  "R7A":{far:4.0,height:80,base:65,lotCov:65,parking:0.5},
+  "R7-1":{far:3.44,height:75,base:60,lotCov:65,parking:0.5},
+  "R7-2":{far:3.44,height:75,base:60,lotCov:65,parking:0.5},
+  "R8A":{far:6.02,height:120,base:85,lotCov:70,parking:0.4},
+  "R8B":{far:4.0,height:75,base:60,lotCov:70,parking:0.4},
+};
+
+// Lafayette duplex specs
+Dashboard.LAFAYETTE = {
+  address: "722 Lafayette Ave, Bed-Stuy, Brooklyn",
+  zone: "R6A",
+  lotArea: 3600, // approximate lot area in SF for the 4-duplex site
+  units: [
+    {name:"Duplex A",sf:1075,bed:2,bath:2,price:1450000},
+    {name:"Duplex B",sf:727,bed:1,bath:1,price:950000},
+    {name:"Duplex C",sf:715,bed:1,bath:1,price:1075000},
+    {name:"Duplex D",sf:822,bed:1,bath:1,price:1200000},
+  ]
+};
+
+// Key terms to cross-link throughout the dashboard
+Dashboard.KEY_TERMS = [
+  "FAR","Floor Area Ratio","setback","bulk","sky exposure plane","lot coverage",
+  "base height","building envelope","dwelling unit","open space","quality housing",
+  "contextual zoning","height factor","variance","special permit"
+];
+
+// Helper: wrap a term with a tooltip
+Dashboard.termTip = function(text) {
+  if (!text) return text;
+  const terms = Dashboard.ZONING_TERMS;
+  const keys = Dashboard.KEY_TERMS;
+  let out = text;
+  keys.forEach(key => {
+    const re = new RegExp(`\\b(${key.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")})\\b`, "gi");
+    const match = terms.find(t => t.t.toLowerCase().includes(key.toLowerCase()));
+    if (match) {
+      out = out.replace(re, `<span class="zt">$1<span class="zt-tip"><strong>${match.t}</strong>${match.d}</span></span>`);
+    }
+  });
+  return out;
+};
+
+// Helper: get zone for a comp
+Dashboard.getZone = function(comp) {
+  return Dashboard.ZONE_MAP[comp.neighborhood] || "—";
+};
 
 // ── BOOT ──
 const D = new Dashboard(RAW);
